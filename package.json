@@ -11,7 +11,7 @@
     "build": "npm run build -w apps/backend && npm run build -w apps/frontend",
     "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "lint:staged": "lint-staged"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",
