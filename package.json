@@ -1,26 +1,16 @@
 {
-  "name": "mediai-monorepo",
+  "name": "medi-ai-monorepo",
   "private": true,
   "version": "0.1.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w apps/backend\" \"npm run dev -w apps/frontend\"",
-    "build": "npm run build -w apps/backend && npm run build -w apps/frontend",
-    "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "lint:frontend": "npm run lint --prefix frontend",
     "format": "prettier --write .",
-    "lint:staged": "lint-staged"
+    "compose:up": "docker compose up --build",
+    "compose:down": "docker compose down"
   },
   "devDependencies": {
-    "concurrently": "^9.0.1",
-    "lint-staged": "^15.2.10",
     "prettier": "^3.3.3"
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md,css}": [
-      "prettier --write"
-    ]
   }
 }

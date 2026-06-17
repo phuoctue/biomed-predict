@@ -1,111 +1,90 @@
-﻿# MediAI Base Project
+# MediAI
 
-## 1) Monorepo Structure
+Monorepo base for a medical AI platform focused on drugs, diseases, patient context, and explainable evaluation.
+
+## Structure
 
 ```txt
-mediai-monorepo/
-  apps/
-    backend/
-      prisma/
-        schema.prisma
-      src/
-        common/middleware/
-          auth.middleware.ts
-          role.middleware.ts
-          request-logger.ts
-          error-handler.ts
-        config/
-          env.ts
-          logger.ts
-          prisma.ts
-        modules/
-          auth/auth.routes.ts
-          auth/auth.service.ts
-          users/users.routes.ts
-          patients/patients.routes.ts
-          drugs/drugs.routes.ts
-          evaluations/evaluations.routes.ts
-        app.ts
-        server.ts
-      package.json
-      tsconfig.json
-      Dockerfile
-    frontend/
-      src/
-        app/providers/app-providers.tsx
-        app/routes/router.tsx
-        app/routes/protected-route.tsx
-        components/layout/
-          main-layout.tsx
-          header.tsx
-          sidebar.tsx
-        features/auth/
-          api/auth.api.ts
-          pages/login.page.tsx
-          store/auth.store.ts
-        lib/api-client.ts
-        App.tsx
-        main.tsx
-        index.css
-      package.json
-      tsconfig.json
-      vite.config.ts
-      tailwind.config.cjs
-      postcss.config.cjs
-      Dockerfile
-  packages/shared/src/
-  docker-compose.yml
-  .env.example
-  package.json
+medi-ai/
+├── frontend/          # React + Vite + TypeScript
+├── backend/           # Java 21 + Spring Boot 3 base
+├── ai-service/        # Python 3.11+ + FastAPI
+├── docker-compose.yml
+├── .env.example
+├── README.md
+└── .gitignore
 ```
 
-## 2) Setup Commands (Step-by-step)
+## What is already in place
+
+- `frontend/` includes auth, protected routes, shell layout, sidebar, header, theme switch, axios client, and starter pages.
+- `backend/` includes Spring Boot base structure, `pom.xml`, `application.yml`, `Dockerfile`, main class, and starter schema SQL.
+- `ai-service/` includes FastAPI, `/evaluate`, `/explain`, environment-driven LLM config, and Docker support.
+- `docker-compose.yml` runs `postgres`, `backend`, `ai-service`, and `frontend`.
+
+## Setup
+
+1. Copy env
 
 ```bash
-# 1. Move into project
-cd E:\WorkSpace\biomed-predict\biomed-predict
-
-# 2. Install all workspace deps
-npm install
-
-# 3. Copy env
 copy .env.example .env
+```
 
-# 4. Start PostgreSQL quickly (Docker)
-docker compose up -d postgres
+2. Install frontend deps
 
-# 5. Generate Prisma Client + migrate
-npm run prisma:generate -w apps/backend
-npm run prisma:migrate -w apps/backend
+```bash
+cd frontend
+npm install
+```
 
-# 6. Run backend + frontend
+3. Run the frontend locally
+
+```bash
 npm run dev
 ```
 
-Optional full Docker:
+4. Run the AI service locally
+
+```bash
+cd ../ai-service
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+5. Run the backend locally
+
+```bash
+cd ../backend
+mvn spring-boot:run
+```
+
+6. Start everything with Docker
 
 ```bash
 docker compose up --build
 ```
 
-## 3) Auth Base
+## Docker Compose
 
-- Register/Login/Refresh/Logout endpoints at `/api/auth/*`
-- Access token: JWT (returned in JSON)
-- Refresh token: HttpOnly cookie
-- RBAC roles: `ADMIN`, `DOCTOR`, `PHARMACIST`
-- Middleware ready: `authMiddleware`, `roleMiddleware`
+- `postgres` on `${POSTGRES_PORT:-5432}`
+- `backend` on `${BACKEND_PORT:-8080}`
+- `ai-service` on `${AI_SERVICE_PORT:-8000}`
+- `frontend` on `${FRONTEND_PORT:-5173}`
+- Frontend and AI service are mounted for live reload
 
-## 4) API Base Routes
+## Initial schema
 
-- `/api/auth`
-- `/api/users`
-- `/api/patients`
-- `/api/drugs`
-- `/api/evaluations`
+Core tables are defined in `backend/src/main/resources/db/schema.sql`:
 
-## 5) Notes
+- `users`
+- `patients`
+- `drugs`
+- `evaluations`
 
-- Frontend includes modern medical-style login UI, protected route, sidebar + header layout, dark mode.
-- Backend includes Pino request logging, centralized error handling, Zod validation.
-- Prisma schema includes core models: users, patients, allergies, medications, drugs, interactions, evaluations, evaluation details.
+## API hints
+
+- Frontend expects `POST /api/auth/login` from the Java backend.
+- AI service exposes `POST /api/v1/evaluate` and `POST /api/v1/explain`.
+- Backend base exposes `GET /api/health`.

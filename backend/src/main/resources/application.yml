@@ -1,0 +1,36 @@
+server:
+  port: ${BACKEND_PORT:8080}
+
+spring:
+  application:
+    name: mediai-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/mediai_db}
+    username: ${POSTGRES_USER:mediai}
+    password: ${POSTGRES_PASSWORD:mediai123}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
+
+security:
+  jwt:
+    issuer: ${JWT_ISSUER:MediAI}
+    access-secret: ${JWT_ACCESS_SECRET:change_me_access_secret}
+    refresh-secret: ${JWT_REFRESH_SECRET:change_me_refresh_secret}
+    access-expires-in: ${JWT_ACCESS_EXPIRES_IN:15m}
+    refresh-expires-in: ${JWT_REFRESH_EXPIRES_IN:7d}
+
+logging:
+  level:
+    root: INFO
+    com.mediai: DEBUG
+
