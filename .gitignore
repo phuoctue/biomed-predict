@@ -9,6 +9,7 @@ ai-service/.pytest_cache/
 .env
 .stakpak/
 .idea/
+.stakpak/
 .vscode/
 dist/
 coverage/
