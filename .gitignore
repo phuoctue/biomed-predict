@@ -8,6 +8,7 @@ ai-service/.pytest_cache/
 .DS_Store
 .env
 .idea/
+.stakpak/
 .vscode/
 dist/
 coverage/
