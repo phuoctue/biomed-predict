@@ -22,6 +22,14 @@ spring:
     init:
       mode: always
 
+ai:
+  service:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+    evaluation-path: ${AI_SERVICE_EVALUATION_PATH:/api/v1/evaluate}
+    explain-path: ${AI_SERVICE_EXPLAIN_PATH:/api/v1/explain}
+    model-name: ${AI_MODEL_NAME:gpt-4o-mini}
+    model-version: ${AI_MODEL_VERSION:1.0}
+
 security:
   jwt:
     issuer: ${JWT_ISSUER:MediAI}
