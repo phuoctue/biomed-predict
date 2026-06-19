@@ -33,10 +33,49 @@ create table if not exists patients (
 
 create table if not exists drugs (
   id uuid primary key,
+  code varchar(64) not null unique,
   name varchar(255) not null,
   generic_name varchar(255),
-  drug_class varchar(255),
+  drug_group varchar(255),
   dosage_form varchar(255),
+  strength varchar(255),
+  unit varchar(50),
+  manufacturer varchar(255),
+  usage_instructions text,
+  recommended_dose text,
+  side_effects text,
+  storage_condition text,
+  status varchar(50) not null default 'ACTIVE',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists ingredients (
+  id uuid primary key,
+  code varchar(64) not null unique,
+  name varchar(255) not null,
+  description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists drug_ingredients (
+  id uuid primary key,
+  drug_id uuid not null references drugs(id) on delete cascade,
+  ingredient_id uuid not null references ingredients(id) on delete cascade,
+  concentration varchar(255),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(drug_id, ingredient_id)
+);
+
+create table if not exists drug_interactions (
+  id uuid primary key,
+  source_drug_id uuid not null references drugs(id) on delete cascade,
+  target_drug_id uuid not null references drugs(id) on delete cascade,
+  severity varchar(50) not null,
+  description text,
+  recommendation text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
