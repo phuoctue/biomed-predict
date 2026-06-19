@@ -23,6 +23,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ErrorResponse(false, "VALIDATION_ERROR", "Validation failed.", errors));
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(false, "NOT_FOUND", exception.getMessage(), List.of()));
     @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleAuthentication(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
