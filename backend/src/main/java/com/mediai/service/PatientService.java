@@ -15,10 +15,10 @@ import com.mediai.dto.patient.PatientEvaluationSummaryResponse;
 import com.mediai.dto.patient.PatientResponse;
 import com.mediai.dto.patient.PatientSummaryResponse;
 import com.mediai.dto.patient.UpdatePatientRequest;
-import com.mediai.entity.Evaluation;
+import com.mediai.entity.AIEvaluation;
 import com.mediai.entity.Patient;
 import com.mediai.exception.ResourceNotFoundException;
-import com.mediai.repository.EvaluationRepository;
+import com.mediai.repository.AIEvaluationRepository;
 import com.mediai.repository.PatientRepository;
 import com.mediai.specification.PatientSpecifications;
 
@@ -26,11 +26,11 @@ import com.mediai.specification.PatientSpecifications;
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final EvaluationRepository evaluationRepository;
+    private final AIEvaluationRepository aiEvaluationRepository;
 
-    public PatientService(PatientRepository patientRepository, EvaluationRepository evaluationRepository) {
+    public PatientService(PatientRepository patientRepository, AIEvaluationRepository aiEvaluationRepository) {
         this.patientRepository = patientRepository;
-        this.evaluationRepository = evaluationRepository;
+        this.aiEvaluationRepository = aiEvaluationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +88,7 @@ public class PatientService {
     @Transactional(readOnly = true)
     public PatientSummaryResponse getSummary(UUID id) {
         var patient = findPatient(id);
-        var history = evaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
+        var history = aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
                 .toList();
         var latest = history.isEmpty() ? null : history.get(0);
@@ -97,7 +97,7 @@ public class PatientService {
 
     @Transactional(readOnly = true)
     public List<PatientEvaluationSummaryResponse> getAiHistory(UUID id) {
-        return evaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
+        return aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
                 .toList();
     }
