@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "../lib/api-client";
 import { PatientInfo, Interaction, PrescribedDrug } from "../types/evaluation";
 
 export const useEvaluation = (patientId: string) => {
@@ -13,7 +13,7 @@ export const useEvaluation = (patientId: string) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`/api/ai-evaluations/latest`, { params: { patientId } });
+        const response = await apiClient.get(`/ai-evaluations/latest`, { params: { patientId } });
         setData(response.data.data);
       } catch (error) {
         console.error("API Error", error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "../../../lib/api-client";
 import { FileText, Play, ChevronRight, Printer, Save, Loader2 } from "lucide-react";
 import { ClinicalSummaryCard } from "../../../components/ClinicalSummaryCard";
 import { DrugSelectionList } from "../../../components/DrugSelectionList";
@@ -32,7 +32,7 @@ export const DrugInteractionPage = () => {
   const fetchPatientSession = async () => {
     try {
       setLoadingPatient(true);
-      const response = await axios.get("/api/patients/982839/clinical-summary");
+      const response = await apiClient.get("/patients/982839/clinical-summary");
       if (response.data && response.data.success) {
         setCurrentPatient(response.data.data);
       }
@@ -56,7 +56,7 @@ export const DrugInteractionPage = () => {
 
     try {
       setEvaluating(true);
-      const response = await axios.post("/api/ai-evaluations/analyze-interactions", {
+      const response = await apiClient.post("/ai-evaluations/analyze-interactions", {
         patientId: currentPatient?.id,
         drugIds: selectedDrugs.map((d) => d.id),
       });

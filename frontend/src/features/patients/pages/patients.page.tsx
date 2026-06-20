@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "../../../lib/api-client";
 import { 
   Plus, 
   Search,  
@@ -45,7 +45,7 @@ export const PatientsPage = () => {
       setLoading(true);
       
       // Khớp chính xác với cấu trúc Query Parameters trong tài liệu API của bạn
-      const response = await axios.get("/api/patients", {
+      const response = await apiClient.get("/patients", {
         params: {
           keyword: keyword || undefined,
           page: page,

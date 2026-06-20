@@ -5,7 +5,7 @@ interface TableProps {
   drugs: PrescribedDrug[];
 }
 
-export const PrescribedDrugTable = ({ drugs }: TableProps) => (
+export const PrescribedDrugTable = ({ drugs = [] }: TableProps) => (
   <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
     <h3 className="text-sm font-bold text-slate-900 mb-4">Danh mục thuốc đang dùng</h3>
     <table className="w-full text-sm">
@@ -17,7 +17,7 @@ export const PrescribedDrugTable = ({ drugs }: TableProps) => (
         </tr>
       </thead>
       <tbody>
-        {drugs.map((drug) => (
+        {drugs?.map((drug) => (
           <tr key={drug.id} className="border-b last:border-0">
             <td className="py-3 font-bold">{drug.name}</td>
             <td className="py-3">{drug.dosage}</td>

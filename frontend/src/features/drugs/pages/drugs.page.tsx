@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "../../../lib/api-client";
 import {
   Plus,
   Search,
@@ -44,7 +44,7 @@ export const DrugsPage = () => {
   const fetchDrugs = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/drugs", {
+      const response = await apiClient.get("/drugs", {
         params: {
           keyword: keyword || undefined,
           category: activeCategory !== "all" ? activeCategory : undefined,
