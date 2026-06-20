@@ -66,6 +66,46 @@ mvn spring-boot:run
 docker compose up --build
 ```
 
+## Supabase PostgreSQL
+
+For shared team data and easier deployment, point the backend to a Supabase PostgreSQL database.
+
+1. Create a Supabase project.
+2. Copy the PostgreSQL connection details from the Supabase dashboard.
+3. Set these environment variables for the backend:
+
+```bash
+DATABASE_URL=jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=<your_supabase_db_password>
+```
+
+4. Keep the backend `schema.sql` in place for local bootstrap, or switch to a migration tool later if you want stricter deployment control.
+
+Recommended pool settings for cloud Postgres:
+
+```bash
+DB_POOL_MAX_SIZE=5
+DB_POOL_MIN_IDLE=1
+DB_POOL_CONNECTION_TIMEOUT_MS=30000
+```
+
+## One-command local start
+
+Run this from the repository root on Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1
+```
+
+The script will:
+
+- read existing env values from `.env` if present
+- prompt for Supabase connection details if needed
+- create the Python virtual environment for `ai-service` if missing
+- install Python dependencies
+- start the AI service and backend in the background
+
 ## Docker Compose
 
 - `postgres` on `${POSTGRES_PORT:-5432}`
