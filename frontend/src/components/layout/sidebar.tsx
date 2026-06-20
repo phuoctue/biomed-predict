@@ -7,7 +7,9 @@ import {
   Pill, 
   ShieldAlert, 
   LogOut,
-  Activity
+  Activity,
+  History,       // Thêm icon Lịch sử
+  Settings
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -18,6 +20,8 @@ export const Sidebar = () => {
     { path: routePaths.patients, label: 'Hồ sơ bệnh nhân', icon: <Users className="h-4 w-4" /> },
     { path: routePaths.drugs, label: 'Danh mục thuốc', icon: <Pill className="h-4 w-4" /> },
     { path: routePaths.evaluations, label: 'Đánh giá AI (CDSS)', icon: <ShieldAlert className="h-4 w-4" /> },
+    { path: routePaths.history, label: 'Lịch sử', icon: <History className="h-4 w-4" /> }, // Mới
+    { path: routePaths.settings, label: 'Quản trị', icon: <Settings className="h-4 w-4" /> }, // Mới
   ];
 
   const handleLogout = () => {
