@@ -15,9 +15,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    
+    // THÊM ĐOẠN NÀY ĐỂ KÍCH HOẠT PATH ALIAS
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src"],
   "references": []
 }
-

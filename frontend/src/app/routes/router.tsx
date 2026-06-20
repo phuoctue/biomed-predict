@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./protected-route";
 import { routePaths } from "./route-paths";
 import { AppShell } from "../../components/layout/app-shell";
 import { LoginPage } from "../../features/auth/pages/login.page";
+import { RegisterPage } from "../../features/auth/pages/register.page";
 import { DashboardPage } from "../../features/dashboard/pages/dashboard.page";
 import { PatientsPage } from "../../features/patients/pages/patients.page";
 import { DrugsPage } from "../../features/drugs/pages/drugs.page";
@@ -12,6 +13,10 @@ export const router = createBrowserRouter([
   {
     path: routePaths.login,
     element: <LoginPage />
+  },
+  {
+    path: "/register", // Định tuyến công khai cho trang Đăng ký
+    element: <RegisterPage />
   },
   {
     element: <ProtectedRoute />,

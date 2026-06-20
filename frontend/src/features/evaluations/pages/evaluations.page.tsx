@@ -1,50 +1,55 @@
-import { BrainCircuit, ClipboardList, Sparkles } from "lucide-react";
-
-const evaluationCards = [
-  {
-    title: "Suitability score",
-    value: "82/100",
-    description: "Balanced risk profile with no known allergy conflict."
-  },
-  {
-    title: "Suggested alternative",
-    value: "Atorvastatin",
-    description: "Alternative selected based on interaction and tolerance profile."
-  },
-  {
-    title: "Explainability",
-    value: "Ready",
-    description: "Natural language summary available for the chart note."
-  }
-];
+import React from "react";
+// Import các component thông qua alias @/ đã cấu hình
+import { useEvaluation } from "@/hooks/useEvaluation";
+import { PatientHeader } from "@/components/PatientHeader";
+import { InteractionList } from "@/components/InteractionList";
+import { RiskSummary } from "@/components/RiskSummary";
+import { PrescribedDrugTable } from "@/components/PrescribedDrugTable";
+import { ClinicalIndicators } from "@/components/ClinicalIndicators";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 export const EvaluationsPage = () => {
-  return (
-    <div className="space-y-6">
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-glow backdrop-blur">
-        <p className="text-sm uppercase tracking-[0.24em] text-cyan-200">Evaluations</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">AI review results and clinical explanation</h2>
-        <p className="mt-2 max-w-3xl text-sm text-slate-400">
-          This page is wired for the /evaluate and /explain flows from the FastAPI service, while your Spring
-          Boot API can orchestrate authorization and persistence.
-        </p>
-      </section>
+  // 1. Gọi hook quản lý dữ liệu với ID bệnh nhân
+  const { patient, interactions, drugs, loading } = useEvaluation("1002485");
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        {evaluationCards.map((card) => (
-          <article key={card.title} className="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-glow backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div className="rounded-2xl bg-cyan-400/10 p-3 text-cyan-200">
-                {card.title === "Suitability score" ? <ClipboardList className="h-5 w-5" /> : card.title === "Suggested alternative" ? <Sparkles className="h-5 w-5" /> : <BrainCircuit className="h-5 w-5" />}
-              </div>
-            </div>
-            <p className="mt-5 text-sm uppercase tracking-[0.22em] text-slate-400">{card.title}</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{card.value}</p>
-            <p className="mt-2 text-sm text-slate-300">{card.description}</p>
-          </article>
-        ))}
-      </section>
+  // 2. Trạng thái chờ xử lý từ AI
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <div className="p-6 bg-[#f8fafc] min-h-screen">
+      {/* Tiêu đề trang */}
+      <h1 className="text-xl font-bold mb-6 text-slate-800">
+        Chi tiết Kết quả Đánh giá
+      </h1>
+      
+      {/* Thông tin hành chính bệnh nhân */}
+      {patient && <PatientHeader patient={patient} />}
+
+      {/* Grid Layout 3 cột */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        
+        {/* Cột trái: Tương tác thuốc & Chỉ số lâm sàng (chiếm 2/3) */}
+        <div className="lg:col-span-2 space-y-4">
+          <InteractionList interactions={interactions} />
+          
+          {/* Truyền dữ liệu thật từ API nếu backend cung cấp, 
+              hoặc tính toán từ patient.metrics */}
+          <ClinicalIndicators 
+            eGFR={72} 
+            bloodPressure="145/92" 
+          />
+        </div>
+
+        {/* Cột phải: Phân tích rủi ro & Di truyền (chiếm 1/3) */}
+        <div className="lg:col-span-1">
+          <RiskSummary />
+        </div>
+      </div>
+
+      {/* Bảng danh mục thuốc chi tiết */}
+      <PrescribedDrugTable drugs={drugs} />
     </div>
   );
 };
-

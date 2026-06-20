@@ -103,3 +103,17 @@ create table if not exists evaluations (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists patient_drugs (
+  id uuid primary key,
+  patient_id uuid not null references patients(id) on delete cascade,
+  drug_id uuid not null references drugs(id) on delete cascade,
+  dosage varchar(255),
+  frequency varchar(255),
+  indication text,
+  status varchar(50) not null default 'ACTIVE',
+  status_text varchar(255),
+  start_date date,
+  end_date date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
