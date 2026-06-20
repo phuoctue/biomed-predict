@@ -1,8 +1,8 @@
 export const routePaths = {
-  login: "/login",
-  dashboard: "/dashboard",
-  patients: "/patients",
-  drugs: "/drugs",
-  evaluations: "/evaluations"
+  login: '/login',
+  register: '/register',
+  dashboard: '/dashboard',
+  patients: '/patients',
+  drugs: '/drugs',
+  evaluations: '/evaluations',
 } as const;
-
