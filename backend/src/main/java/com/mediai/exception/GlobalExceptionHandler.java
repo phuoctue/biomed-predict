@@ -27,6 +27,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(false, "NOT_FOUND", exception.getMessage(), List.of()));
+    } // <--- Bổ sung dấu đóng ngoặc nhọn này để kết thúc hàm handleNotFound
+
     @ExceptionHandler({ BadCredentialsException.class, UsernameNotFoundException.class })
     public ResponseEntity<ErrorResponse> handleAuthentication(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

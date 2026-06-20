@@ -58,7 +58,8 @@ public class PatientService {
         validateUniqueIdentifiers(request.mrn(), request.citizenId(), null);
 
         var patient = new Patient();
-        applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(), request.citizenId(),
+        applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
+                request.citizenId(),
                 request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
                 request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
                 request.emergencyContactRelation(), request.diagnosis(), request.allergies());
@@ -71,7 +72,8 @@ public class PatientService {
         var patient = findPatient(id);
         validateUniqueIdentifiers(request.mrn(), request.citizenId(), id);
 
-        applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(), request.citizenId(),
+        applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
+                request.citizenId(),
                 request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
                 request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
                 request.emergencyContactRelation(), request.diagnosis(), request.allergies());
