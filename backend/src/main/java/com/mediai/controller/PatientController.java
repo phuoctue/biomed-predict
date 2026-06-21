@@ -74,6 +74,11 @@ public class PatientController {
         return ApiResponse.ok("Patient summary retrieved successfully.", patientService.getSummary(id));
     }
 
+    @GetMapping("/{mrn}/clinical-summary")
+    public ApiResponse<com.mediai.dto.patient.ClinicalSummaryResponse> getClinicalSummary(@PathVariable String mrn) {
+        return ApiResponse.ok("Patient clinical summary retrieved successfully.", patientService.getClinicalSummary(mrn));
+    }
+
     @GetMapping("/{id}/ai-history")
     public ApiResponse<List<PatientEvaluationSummaryResponse>> getAiHistory(@PathVariable UUID id) {
         return ApiResponse.ok("Patient AI history retrieved successfully.", patientService.getAiHistory(id));
