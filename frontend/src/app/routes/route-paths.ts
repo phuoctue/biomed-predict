@@ -5,6 +5,6 @@ export const routePaths = {
   patients: '/patients',
   drugs: '/drugs',
   evaluations: '/evaluations',
-  history: '/history',    // Thêm dòng này
-  settings: '/settings',  // Thêm dòng này
+  history: '/history',
+  settings: '/settings',
 } as const;

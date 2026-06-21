@@ -6,7 +6,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist"]
+    ignores: ["dist", "vite.config.js"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -24,6 +24,15 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
     }
+  },
+  {
+    files: ["*.config.{js,cjs}", "eslint.config.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: {
+        ...globals.node,
+        ...globals.commonjs
+      }
+    }
   }
 );
-

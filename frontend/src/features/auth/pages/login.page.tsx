@@ -3,8 +3,8 @@ import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Đường dẫn chính xác 3 cấp thư mục để từ auth/pages đi ra src/components
-import { RoleTabs, RoleType } from '../../../components/role-tabs';
-import { LoginInput } from '../../../components/login-input';
+import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
+import { LoginInput } from '../../../components/layout/login-input';
 
 export function LoginPage() {
   const [role, setRole] = useState<RoleType>('doctor');

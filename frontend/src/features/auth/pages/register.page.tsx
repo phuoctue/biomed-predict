@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, User, Phone, ShieldCheck, ArrowRight } from 'lucide-react';
 
 // Đường dẫn 3 cấp đi ra src/components tương tự trang login
-import { RoleTabs, RoleType } from '../../../components/role-tabs';
-import { LoginInput } from '../../../components/login-input';
+import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
+import { LoginInput } from '../../../components/layout/login-input';
 
 export function RegisterPage() {
   const [role, setRole] = useState<RoleType>('doctor');
