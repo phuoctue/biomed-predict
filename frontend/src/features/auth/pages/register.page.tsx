@@ -203,12 +203,6 @@ export function RegisterPage() {
 
         </div>
 
-        {/* Khối bảo mật chân trang dưới cùng */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[9px] text-slate-400 font-semibold uppercase tracking-wider select-none">
-          <span>🛡️ HIPAA Compliant</span>
-          <span>🔒 AES-256 Encrypted</span>
-        </div>
-
       </div>
     </div>
   );
