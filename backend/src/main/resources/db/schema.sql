@@ -117,3 +117,15 @@ create table if not exists patient_drugs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists patient_allergies (
+  id uuid primary key,
+  patient_id uuid not null references patients(id) on delete cascade,
+  drug_id uuid references drugs(id),
+  ingredient_id uuid references ingredients(id),
+  severity varchar(50),
+  reaction text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
