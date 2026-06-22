@@ -117,3 +117,47 @@ create table if not exists patient_drugs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists activity_logs (
+  id uuid primary key,
+  user_id uuid not null references users(id) on delete cascade,
+  action_type varchar(50) not null,
+  entity_type varchar(100) not null,
+  entity_id uuid not null,
+  details text,
+  ip_address varchar(50),
+  user_agent text,
+create table if not exists notifications (
+  id uuid primary key,
+  recipient_id uuid not null references users(id) on delete cascade,
+  title varchar(255) not null,
+  message text not null,
+  type varchar(50) not null,
+  status varchar(50) not null default 'UNREAD',
+  read_at timestamptz,
+  sent_at timestamptz not null,
+  related_entity_type varchar(50),
+  related_entity_id uuid,
+  action_url varchar(500),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_activity_logs_user_id on activity_logs(user_id);
+create index if not exists idx_activity_logs_action_type on activity_logs(action_type);
+create index if not exists idx_activity_logs_entity on activity_logs(entity_type, entity_id);
+create index if not exists idx_activity_logs_created_at on activity_logs(created_at);
+create index if not exists idx_notifications_recipient_id on notifications(recipient_id);
+create index if not exists idx_notifications_status on notifications(status);
+create index if not exists idx_notifications_created_at on notifications(created_at);
+create table if not exists patient_allergies (
+  id uuid primary key,
+  patient_id uuid not null references patients(id) on delete cascade,
+  drug_id uuid references drugs(id),
+  ingredient_id uuid references ingredients(id),
+  severity varchar(50),
+  reaction text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
