@@ -117,3 +117,23 @@ create table if not exists patient_drugs (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists notifications (
+  id uuid primary key,
+  recipient_id uuid not null references users(id) on delete cascade,
+  title varchar(255) not null,
+  message text not null,
+  type varchar(50) not null,
+  status varchar(50) not null default 'UNREAD',
+  read_at timestamptz,
+  sent_at timestamptz not null,
+  related_entity_type varchar(50),
+  related_entity_id uuid,
+  action_url varchar(500),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists idx_notifications_recipient_id on notifications(recipient_id);
+create index if not exists idx_notifications_status on notifications(status);
+create index if not exists idx_notifications_created_at on notifications(created_at);
