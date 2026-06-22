@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 // Đường dẫn chính xác 3 cấp thư mục để từ auth/pages đi ra src/components
-import { RoleTabs, RoleType } from '../../../components/role-tabs';
-import { LoginInput } from '../../../components/login-input';
-
-import { loginApi } from '../api/auth.api';
-import { useAuthStore } from '../store/auth.store';
+import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
+import { LoginInput } from '../../../components/layout/login-input';
 
 export function LoginPage() {
-  const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
-
   const [role, setRole] = useState<RoleType>('doctor');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -25,17 +19,20 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const data = await loginApi({ email: username, password });
-      
-      console.log('Login success:', data);
-      setAuth({ accessToken: data.accessToken, user: data.user });
-      
-      // Chuyển hướng về trang chủ sau khi đăng nhập thành công
-      navigate('/');
-    } catch (error: any) {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('Login success:', result.data);
+      } else {
+        alert(result.message || 'Đăng nhập thất bại');
+      }
+    } catch (error) {
       console.error('Lỗi kết nối API:', error);
-      const errorMsg = error.response?.data?.message || 'Đăng nhập thất bại. Hãy chắc chắn Backend Server đang chạy.';
-      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -156,12 +153,6 @@ export function LoginPage() {
             </Link>
           </div>
 
-        </div>
-
-        {/* Khối bảo mật dưới chân trang cố định ở giữa */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[9px] text-slate-400 font-semibold uppercase tracking-wider select-none">
-          <span>🛡️ HIPAA Compliant</span>
-          <span>🔒 AES-256 Encrypted</span>
         </div>
 
       </div>

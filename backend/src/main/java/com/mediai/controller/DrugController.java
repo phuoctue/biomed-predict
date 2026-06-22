@@ -24,8 +24,11 @@ import com.mediai.dto.drug.DrugInteractionResponse;
 import com.mediai.dto.drug.DrugRequest;
 import com.mediai.dto.drug.DrugResponse;
 import com.mediai.dto.drug.DrugSummaryResponse;
+import com.mediai.dto.drug.ExternalDrugSearchRequest;
+import com.mediai.dto.drug.ExternalDrugSearchResponse;
 import com.mediai.service.DrugInteractionService;
 import com.mediai.service.DrugService;
+import com.mediai.service.ExternalDrugService;
 
 import jakarta.validation.Valid;
 
@@ -35,10 +38,13 @@ public class DrugController {
 
     private final DrugService drugService;
     private final DrugInteractionService drugInteractionService;
+    private final ExternalDrugService externalDrugService;
 
-    public DrugController(DrugService drugService, DrugInteractionService drugInteractionService) {
+    public DrugController(DrugService drugService, DrugInteractionService drugInteractionService,
+            ExternalDrugService externalDrugService) {
         this.drugService = drugService;
         this.drugInteractionService = drugInteractionService;
+        this.externalDrugService = externalDrugService;
     }
 
     @GetMapping
@@ -115,5 +121,12 @@ public class DrugController {
     public ApiResponse<String> deleteInteraction(@PathVariable UUID interactionId) {
         drugInteractionService.deleteInteraction(interactionId);
         return ApiResponse.ok("Drug interaction deleted successfully.", "deleted");
+    }
+
+    @PostMapping("/search/external")
+    public ApiResponse<List<ExternalDrugSearchResponse>> searchExternalDrugs(
+            @Valid @RequestBody ExternalDrugSearchRequest request) {
+        return ApiResponse.ok("External drugs searched successfully.",
+                externalDrugService.searchDrugs(request));
     }
 }

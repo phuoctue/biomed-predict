@@ -7,7 +7,12 @@ import { RegisterPage } from "../../features/auth/pages/register.page";
 import { DashboardPage } from "../../features/dashboard/pages/dashboard.page";
 import { PatientsPage } from "../../features/patients/pages/patients.page";
 import { DrugsPage } from "../../features/drugs/pages/drugs.page";
-import { EvaluationsPage } from "../../features/evaluations/pages/evaluations.page";
+import { EvaluationPage } from "../../features/evaluations/pages/EvaluationPage";
+import { HistoryPage } from "../../features/history/HistoryPage";
+import { SettingsPage } from "../../features/settings/SettingsPage";
+
+
+
 
 export const router = createBrowserRouter([
   {
@@ -15,7 +20,7 @@ export const router = createBrowserRouter([
     element: <LoginPage />
   },
   {
-    path: "/register", // Định tuyến công khai cho trang Đăng ký
+    path: "/register",
     element: <RegisterPage />
   },
   {
@@ -42,7 +47,15 @@ export const router = createBrowserRouter([
           },
           {
             path: routePaths.evaluations,
-            element: <EvaluationsPage />
+            element: <EvaluationPage />
+          },
+          {
+            path: routePaths.history,
+            element: <HistoryPage />
+          },
+          {
+            path: routePaths.settings,
+            element: <SettingsPage />
           }
         ]
       }
