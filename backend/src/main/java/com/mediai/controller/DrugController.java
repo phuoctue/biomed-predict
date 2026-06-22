@@ -130,6 +130,12 @@ public class DrugController {
                 externalDrugService.searchDrugs(request));
     }
 
+    @GetMapping("/{id}/alternatives")
+    public PageResponse<DrugSummaryResponse> getAlternativeDrugs(
+            @PathVariable UUID id,
+            @PageableDefault(size = 20) Pageable pageable) {
+        var drug = drugService.getDrug(id);
+        return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, pageable);
     @GetMapping("/search/by-symptoms")
     public PageResponse<DrugSummaryResponse> searchBySymptoms(
             @RequestParam(required = false) String symptom,
