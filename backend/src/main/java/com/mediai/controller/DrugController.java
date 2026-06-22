@@ -129,4 +129,11 @@ public class DrugController {
         return ApiResponse.ok("External drugs searched successfully.",
                 externalDrugService.searchDrugs(request));
     }
+
+    @GetMapping("/search/by-symptoms")
+    public PageResponse<DrugSummaryResponse> searchBySymptoms(
+            @RequestParam(required = false) String symptom,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return drugService.listDrugs(symptom, null, null, pageable);
+    }
 }
