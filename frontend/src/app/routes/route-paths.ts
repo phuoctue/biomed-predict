@@ -5,4 +5,6 @@ export const routePaths = {
   patients: '/patients',
   drugs: '/drugs',
   evaluations: '/evaluations',
+  history: '/history',
+  settings: '/settings',
 } as const;

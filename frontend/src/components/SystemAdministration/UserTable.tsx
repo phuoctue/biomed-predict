@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import Pagination from '@/components/ui/Pagination'; // Import component của bạn
+import Pagination from '@/components/ui/Pagination';
 
 export const UserTable = () => {
   const users = [
@@ -11,12 +11,10 @@ export const UserTable = () => {
   ];
 
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
-  
-  // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 2; // Ví dụ 2 user mỗi trang
+  const itemsPerPage = 2;
 
-  // Tính toán dữ liệu hiển thị
+  // Tính toán dữ liệu hiển thị cho phân trang
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
@@ -26,7 +24,6 @@ export const UserTable = () => {
       <h3 className="font-bold text-slate-900 mb-6 text-base">Danh sách Người dùng</h3>
       
       <table className="w-full text-sm">
-        {/* ... (phần thead giữ nguyên như cũ) ... */}
         <thead className="text-slate-500 text-[11px] uppercase font-bold tracking-wider">
           <tr className="border-b border-slate-100">
             <th className="pb-4 text-left">Người dùng</th>
@@ -72,7 +69,7 @@ export const UserTable = () => {
         </tbody>
       </table>
 
-      {/* Sử dụng Component Pagination đã có sẵn */}
+      {/* Phân trang */}
       <div className="mt-6">
         <Pagination
           currentPage={currentPage}

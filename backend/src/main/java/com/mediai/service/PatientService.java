@@ -104,6 +104,55 @@ public class PatientService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public com.mediai.dto.patient.ClinicalSummaryResponse getClinicalSummary(String mrn) {
+        var patient = patientRepository.findByMrnIgnoreCase(mrn)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with MRN: " + mrn));
+        
+        List<String> conditions = List.of();
+        if (patient.getDiagnosis() != null && !patient.getDiagnosis().isBlank()) {
+            conditions = List.of(patient.getDiagnosis().split("[,;\\n]+")).stream()
+                    .map(String::trim)
+                    .filter(c -> !c.isBlank())
+                    .toList();
+        }
+
+        int egfr = 90;
+        String bp = "120/80";
+
+        String diagLower = patient.getDiagnosis() != null ? patient.getDiagnosis().toLowerCase() : "";
+        if (diagLower.contains("egfr")) {
+            try {
+                var pattern = java.util.regex.Pattern.compile("egfr.*?(\\d+)");
+                var matcher = pattern.matcher(diagLower);
+                if (matcher.find()) {
+                    egfr = Integer.parseInt(matcher.group(1));
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        if (diagLower.contains("/") || diagLower.contains("huyết áp") || diagLower.contains("blood pressure")) {
+            try {
+                var pattern = java.util.regex.Pattern.compile("(\\d{2,3}/\\d{2,3})");
+                var matcher = pattern.matcher(diagLower);
+                if (matcher.find()) {
+                    bp = matcher.group(1);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
+        return new com.mediai.dto.patient.ClinicalSummaryResponse(
+                patient.getMrn(),
+                patient.getFullName(),
+                conditions,
+                egfr,
+                bp
+        );
+    }
+
     private Patient findPatient(UUID id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found."));

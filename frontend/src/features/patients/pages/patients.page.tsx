@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { apiClient } from "../../../lib/api-client";
 import { 
   Plus, 
@@ -8,9 +8,8 @@ import {
   Loader2,
   Users
 } from "lucide-react";
-import Pagination from '@/components/ui/Pagination'; // Đảm bảo import đúng đường dẫn
+import Pagination from '@/components/ui/Pagination';
 
-// Interface chuẩn
 interface Patient {
   id: number;
   fullName: string;
@@ -18,8 +17,8 @@ interface Patient {
   dateOfBirth: string;
   citizenId: string;
   phone: string;
-  status?: string;      // Trạng thái (Ví dụ: Ổn định, Theo dõi)
-  allergy?: string;     // Dị ứng (Ví dụ: Penicillin)
+  status?: string;
+  allergy?: string;
   latestTestName?: string;
   latestTestValue?: string;
   latestTestDate?: string;
@@ -30,17 +29,11 @@ export const PatientsPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [keyword, setKeyword] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("all");
-
-  const [page, setPage] = useState<number>(0); // 0-based index
+  const [page, setPage] = useState<number>(0);
   const [size] = useState<number>(10);
   const [totalElements, setTotalElements] = useState<number>(0);
 
-<<<<<<< Updated upstream
-  // 3. Hàm kích hoạt API lấy dữ liệu thực tế
-  const fetchPatients = async () => {
-=======
   const fetchPatients = useCallback(async () => {
->>>>>>> Stashed changes
     try {
       setLoading(true);
       const response = await apiClient.get("/patients", {
@@ -48,7 +41,7 @@ export const PatientsPage = () => {
           keyword: keyword || undefined,
           page: page,
           size: size,
-          sort: "id,desc" // Sắp xếp hồ sơ mới nhất lên đầu
+          sort: "id,desc"
         }
       });
 
@@ -57,26 +50,20 @@ export const PatientsPage = () => {
         setTotalElements(response.data.totalElements || 0);
       }
     } catch (error) {
-<<<<<<< Updated upstream
-      console.error("Lỗi khi kết nối đến máy chủ API /api/patients:", error);
-      // Xóa sạch danh sách để tránh giao diện hiển thị sai lệch khi mất kết nối Backend
-=======
       console.error("Lỗi khi kết nối API:", error);
->>>>>>> Stashed changes
       setPatients([]);
       setTotalElements(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [keyword, page, size]);
 
-  // Tự động gọi lại hàm lấy dữ liệu khi chuyển trang hoặc gõ tìm kiếm
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchPatients();
-    }, 400); // Debounce chống spam request liên tục lên máy chủ
+    }, 400);
     return () => clearTimeout(delayDebounce);
-  }, [page, keyword]);
+  }, [fetchPatients]);
 
   const calculateAge = (dobString: string): number => {
     if (!dobString) return 0;
@@ -196,7 +183,6 @@ export const PatientsPage = () => {
           </table>
         </div>
 
-        {/* TÍCH HỢP COMPONENT PHÂN TRANG */}
         {!loading && totalElements > 0 && (
           <Pagination
             currentPage={page + 1}
