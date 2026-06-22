@@ -1,7 +1,6 @@
 package com.mediai.entity;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -11,14 +10,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Version;
+import lombok.Getter;
+import lombok.Setter;
 
 @MappedSuperclass
 @EntityListeners(BaseEntity.EntityTimestampListener.class)
+@Getter
+@Setter
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -26,29 +30,20 @@ public abstract class BaseEntity {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public UUID getId() {
-        return id;
-    }
+    @Column(name = "created_by")
+    private Long createdBy;
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    @Version
+    private Long version;
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
     public static class EntityTimestampListener {
 
@@ -57,6 +52,9 @@ public abstract class BaseEntity {
             var now = Instant.now();
             entity.createdAt = now;
             entity.updatedAt = now;
+            if (entity.deleted == null) {
+                entity.deleted = false;
+            }
         }
 
         @PreUpdate
