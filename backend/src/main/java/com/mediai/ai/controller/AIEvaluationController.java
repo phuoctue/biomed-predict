@@ -94,4 +94,22 @@ public class AIEvaluationController {
             @AuthenticationPrincipal UserPrincipal principal) {
         return ApiResponse.ok("AI re-evaluation completed successfully.", aiEvaluationService.reanalyze(id, principal));
     }
+
+    @GetMapping("/evaluations/history")
+    public PageResponse<AIEvaluationSummaryResponse> getEvaluationHistory(
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID drugId,
+            @RequestParam(required = false) String riskLevel,
+            @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable pageable) {
+        var page = aiEvaluationService.getEvaluationHistory(patientId, drugId, riskLevel, pageable);
+        return PageResponse.ok(
+                "Evaluation history retrieved successfully.",
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast());
+    }
 }

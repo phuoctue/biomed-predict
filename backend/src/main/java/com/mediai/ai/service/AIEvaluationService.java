@@ -112,6 +112,20 @@ public class AIEvaluationService {
     }
 
     @Transactional(readOnly = true)
+    public Page<AIEvaluationSummaryResponse> getEvaluationHistory(UUID patientId, UUID drugId, String riskLevel,
+            Pageable pageable) {
+        Specification<AIEvaluation> specification = AIEvaluationSpecifications.hasPatientId(patientId)
+                .and(AIEvaluationSpecifications.hasDrugId(drugId));
+
+        if (riskLevel != null && !riskLevel.isBlank()) {
+            specification = specification.and(AIEvaluationSpecifications.hasRiskLevel(riskLevel));
+        }
+
+        return aiEvaluationRepository.findAll(specification, pageable)
+                .map(this::toSummaryResponse);
+    }
+
+    @Transactional(readOnly = true)
     public AIEvaluationResponse getEvaluation(UUID id) {
         return toResponse(findEvaluation(id), null);
     }
