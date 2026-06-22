@@ -7,6 +7,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mediai.ai.dto.AIEvaluationRequest;
 import com.mediai.ai.dto.AIEvaluationResponse;
 import com.mediai.ai.dto.AIEvaluationSummaryResponse;
+import com.mediai.ai.dto.EvaluationExportRequest;
 import com.mediai.ai.dto.ExplainRequestPayload;
 import com.mediai.ai.dto.ExplainResponsePayload;
 import com.mediai.ai.service.AIEvaluationService;
+import com.mediai.ai.service.ReportGenerationService;
 import com.mediai.dto.common.ApiResponse;
 import com.mediai.dto.common.PageResponse;
 import com.mediai.security.UserPrincipal;
@@ -33,9 +37,11 @@ import jakarta.validation.Valid;
 public class AIEvaluationController {
 
     private final AIEvaluationService aiEvaluationService;
+    private final ReportGenerationService reportGenerationService;
 
-    public AIEvaluationController(AIEvaluationService aiEvaluationService) {
+    public AIEvaluationController(AIEvaluationService aiEvaluationService, ReportGenerationService reportGenerationService) {
         this.aiEvaluationService = aiEvaluationService;
+        this.reportGenerationService = reportGenerationService;
     }
 
     @PostMapping("/evaluate")
@@ -93,5 +99,35 @@ public class AIEvaluationController {
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ApiResponse.ok("AI re-evaluation completed successfully.", aiEvaluationService.reanalyze(id, principal));
+    }
+
+    @GetMapping("/evaluations/export/pdf")
+    public ResponseEntity<byte[]> exportToPdf(
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID drugId,
+            @RequestParam(required = false) String riskLevel) throws IOException {
+        var evaluations = aiEvaluationService.getEvaluationHistory(patientId, drugId, riskLevel, org.springframework.data.domain.Pageable.unpaged())
+                .getContent();
+        byte[] pdfContent = reportGenerationService.generatePdfReport(evaluations, "Evaluation Report");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"evaluation_report.pdf\"")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE)
+                .body(pdfContent);
+    }
+
+    @GetMapping("/evaluations/export/excel")
+    public ResponseEntity<byte[]> exportToExcel(
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID drugId,
+            @RequestParam(required = false) String riskLevel) throws IOException {
+        var evaluations = aiEvaluationService.getEvaluationHistory(patientId, drugId, riskLevel, org.springframework.data.domain.Pageable.unpaged())
+                .getContent();
+        byte[] excelContent = reportGenerationService.generateExcelReport(evaluations, "Evaluation Report");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"evaluation_report.xlsx\"")
+                .header(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excelContent);
     }
 }

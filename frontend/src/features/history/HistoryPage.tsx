@@ -5,12 +5,18 @@ import { HistoryStats } from '@/components/History/HistoryStats';
 import { HistoryTable } from '@/components/History/HistoryTable';
 import { WeeklyTrendChart } from '@/components/History/WeeklyTrendChart';
 import { CompletionStatus } from '@/components/History/CompletionStatus';
+import { ExportModal } from '@/components/History/ExportModal';
 import { Calendar, Download, Filter } from 'lucide-react';
 
 export const HistoryPage = () => {
-  // State quản lý khoảng thời gian chọn
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [startDate, endDate] = dateRange;
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [riskFilter, setRiskFilter] = useState<string>("");
+
+  const handleExportClick = () => {
+    setIsExportModalOpen(true);
+  };
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen space-y-6">
@@ -50,7 +56,9 @@ export const HistoryPage = () => {
           </div>
 
           {/* Nút Xuất báo cáo */}
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-sm shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
+          <button
+            onClick={handleExportClick}
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-sm shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">
             <Download size={16} />
             Xuất Báo Cáo
           </button>
@@ -71,6 +79,9 @@ export const HistoryPage = () => {
         <CompletionStatus />
       </div>
 
-    </div>
-  );
-};
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        filters={{ riskLevel: riskFilter }}
+      />
