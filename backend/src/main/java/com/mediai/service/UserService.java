@@ -13,6 +13,7 @@ import com.mediai.dto.common.PageResponse;
 import com.mediai.dto.user.ChangePasswordRequest;
 import com.mediai.dto.user.CreateUserRequest;
 import com.mediai.dto.user.UpdateUserRequest;
+import com.mediai.dto.user.UpdateProfileRequest;
 import com.mediai.dto.user.UserResponse;
 import com.mediai.entity.User;
 import com.mediai.entity.UserRole;
@@ -96,6 +97,18 @@ public class UserService {
         var user = findUser(id);
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(UUID id, UpdateProfileRequest request) {
+        var user = findUser(id);
+        if (request.fullName() != null && !request.fullName().isBlank()) {
+            user.setFullName(request.fullName());
+        }
+        if (request.department() != null && !request.department().isBlank()) {
+            user.setDepartment(request.department());
+        }
+        return UserResponse.from(userRepository.save(user));
     }
 
     private User findUser(UUID id) {
