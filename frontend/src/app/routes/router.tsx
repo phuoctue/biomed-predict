@@ -7,6 +7,7 @@ import { RegisterPage } from "../../features/auth/pages/register.page";
 import { DashboardPage } from "../../features/dashboard/pages/dashboard.page";
 import { PatientsPage } from "../../features/patients/pages/patients.page";
 import { DrugsPage } from "../../features/drugs/pages/drugs.page";
+import { BookmarkedDrugsPage } from "../../features/drugs/pages/bookmarked-drugs.page";
 import { EvaluationPage } from "../../features/evaluations/pages/EvaluationPage";
 import { HistoryPage } from "../../features/history/HistoryPage";
 import { SettingsPage } from "../../features/settings/SettingsPage";
@@ -44,6 +45,10 @@ export const router = createBrowserRouter([
           {
             path: routePaths.drugs,
             element: <DrugsPage />
+          },
+          {
+            path: routePaths.bookmarkedDrugs,
+            element: <BookmarkedDrugsPage />
           },
           {
             path: routePaths.evaluations,

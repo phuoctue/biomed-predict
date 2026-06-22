@@ -4,6 +4,7 @@ export const routePaths = {
   dashboard: '/dashboard',
   patients: '/patients',
   drugs: '/drugs',
+  bookmarkedDrugs: '/drugs/bookmarks',
   evaluations: '/evaluations',
   history: '/history',
   settings: '/settings',
