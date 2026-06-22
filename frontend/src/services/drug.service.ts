@@ -1,21 +1,54 @@
 import { apiClient } from "../lib/api-client";
 
-// Định nghĩa kiểu dữ liệu cho thuốc để tránh lỗi 'any'
 export interface Drug {
-  id: number;
+  id: number | string;
   name: string;
   code: string;
-  stockQuantity: number;
-  unit: string;
+  stockQuantity?: number;
+  unit?: string;
+  bookmarked?: boolean;
 }
 
 export interface FetchDrugsParams {
   page: number;
   size: number;
-  search?: string; // Thêm search là tùy chọn
+  search?: string;
+  keyword?: string;
 }
 
 export const fetchDrugs = async (params: FetchDrugsParams) => {
-  const response = await apiClient.get("/drugs", { params });
-  return response.data; // Giả sử response có dạng { data: Drug[], totalPages: number, totalElements: number }
+  const response = await apiClient.get("/drugs", {
+    params: {
+      ...params,
+      keyword: params.keyword ?? params.search
+    }
+  });
+  return response.data;
+};
+
+export interface DrugBookmark extends Drug {
+  bookmarkId?: number;
+  bookmarkedAt?: string;
+  note?: string;
+}
+
+export interface FetchBookmarkedDrugsParams {
+  page: number;
+  size: number;
+  keyword?: string;
+}
+
+export const fetchBookmarkedDrugs = async (params: FetchBookmarkedDrugsParams) => {
+  const response = await apiClient.get("/bookmarks", { params });
+  return response.data;
+};
+
+export const bookmarkDrug = async (drugId: number | string) => {
+  const response = await apiClient.post(`/bookmarks/drugs/${drugId}`);
+  return response.data;
+};
+
+export const removeDrugBookmark = async (drugId: number | string) => {
+  const response = await apiClient.delete(`/bookmarks/drugs/${drugId}`);
+  return response.data;
 };

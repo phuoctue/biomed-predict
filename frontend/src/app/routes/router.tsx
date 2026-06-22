@@ -7,6 +7,7 @@ import { RegisterPage } from "../../features/auth/pages/register.page";
 import { DashboardPage } from "../../features/dashboard/pages/dashboard.page";
 import { PatientsPage } from "../../features/patients/pages/patients.page";
 import { DrugsPage } from "../../features/drugs/pages/drugs.page";
+import { BookmarkedDrugsPage } from "../../features/drugs/pages/bookmarked-drugs.page";
 import { UsageStatisticsPage } from "../../features/statistics/pages/usage-statistics.page";
 import { EvaluationPage } from "../../features/evaluations/pages/EvaluationPage";
 import { HistoryPage } from "../../features/history/HistoryPage";
@@ -47,6 +48,8 @@ export const router = createBrowserRouter([
             element: <DrugsPage />
           },
           {
+            path: routePaths.bookmarkedDrugs,
+            element: <BookmarkedDrugsPage />
             path: routePaths.usageStatistics,
             element: <UsageStatisticsPage />
           },
