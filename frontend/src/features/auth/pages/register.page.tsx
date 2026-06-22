@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, User, Phone, ShieldCheck, ArrowRight } from 'lucide-react';
 
 // Đường dẫn 3 cấp đi ra src/components tương tự trang login
-import { RoleTabs, RoleType } from '../../../components/role-tabs';
-import { LoginInput } from '../../../components/login-input';
+import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
+import { LoginInput } from '../../../components/layout/login-input';
 
 export function RegisterPage() {
   const [role, setRole] = useState<RoleType>('doctor');
@@ -201,12 +201,6 @@ export function RegisterPage() {
             </a>
           </div>
 
-        </div>
-
-        {/* Khối bảo mật chân trang dưới cùng */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[9px] text-slate-400 font-semibold uppercase tracking-wider select-none">
-          <span>🛡️ HIPAA Compliant</span>
-          <span>🔒 AES-256 Encrypted</span>
         </div>
 
       </div>
