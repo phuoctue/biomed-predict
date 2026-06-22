@@ -24,6 +24,7 @@ import com.mediai.dto.user.ChangePasswordRequest;
 import com.mediai.dto.user.CreateUserRequest;
 import com.mediai.dto.user.UpdateUserRequest;
 import com.mediai.dto.user.UserResponse;
+import com.mediai.dto.user.UpdateProfileRequest;
 import com.mediai.entity.UserRole;
 import com.mediai.security.UserPrincipal;
 import com.mediai.service.UserService;
@@ -111,5 +112,25 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);
         return ApiResponse.ok("Password changed successfully.", "updated");
+    }
+
+    /**
+     * Get current user's profile.
+     * Available to all authenticated users.
+     */
+    @GetMapping("/profile/me")
+    public ApiResponse<UserResponse> getProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        return ApiResponse.ok("Profile retrieved successfully.", userService.getUser(principal.id()));
+    }
+
+    /**
+     * Update current user's profile.
+     * Available to all authenticated users.
+     */
+    @PutMapping("/profile/me")
+    public ApiResponse<UserResponse> updateProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ApiResponse.ok("Profile updated successfully.", userService.updateProfile(principal.id(), request));
     }
 }
