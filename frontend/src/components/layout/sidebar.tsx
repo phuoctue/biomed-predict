@@ -11,6 +11,8 @@ import {
   Settings,
   ShieldAlert,
   Users
+import { 
+  BarChart3, LayoutDashboard, Users, Pill, ShieldAlert, LogOut, Activity, History, Settings 
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -21,6 +23,7 @@ export const Sidebar = () => {
     { path: routePaths.patients, label: 'Hồ sơ bệnh nhân', icon: <Users className="h-5 w-5" /> },
     { path: routePaths.drugs, label: 'Danh mục thuốc', icon: <Pill className="h-5 w-5" /> },
     { path: routePaths.bookmarkedDrugs, label: 'Thuốc đã lưu', icon: <BookmarkCheck className="h-5 w-5" /> },
+    { path: routePaths.usageStatistics, label: 'Thống kê sử dụng', icon: <BarChart3 className="h-5 w-5" /> },
     { path: routePaths.evaluations, label: 'Đánh giá AI (CDSS)', icon: <ShieldAlert className="h-5 w-5" /> },
     { path: routePaths.history, label: 'Lịch sử', icon: <History className="h-5 w-5" /> },
     { path: routePaths.settings, label: 'Quản trị', icon: <Settings className="h-5 w-5" /> },
