@@ -22,9 +22,9 @@ const getTotalPages = (response: any, total: number, size: number) =>
 
 export const useDrugBookmarks = (page = 0, keyword = "", size = 10) => {
   const [bookmarks, setBookmarks] = useState<DrugBookmark[]>([]);
-  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number>>(new Set());
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<number | string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<number | string | null>(null);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -55,7 +55,7 @@ export const useDrugBookmarks = (page = 0, keyword = "", size = 10) => {
   }, [loadBookmarks]);
 
   const toggleBookmark = useCallback(
-    async (drugId: number, nextBookmarked?: boolean) => {
+    async (drugId: number | string, nextBookmarked?: boolean) => {
       setSavingId(drugId);
       const shouldBookmark = nextBookmarked ?? !bookmarkedIds.has(drugId);
 

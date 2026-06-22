@@ -1,7 +1,7 @@
 import { Bookmark, BookmarkCheck, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Drug {
-  id: number;
+  id: number | string;
   name: string;
   code: string;
   bookmarked?: boolean;
@@ -12,8 +12,8 @@ interface DrugsTableProps {
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
-  bookmarkedIds?: Set<number>;
-  savingBookmarkId?: number | null;
+  bookmarkedIds?: Set<number | string>;
+  savingBookmarkId?: number | string | null;
   onToggleBookmark?: (drug: Drug, nextBookmarked: boolean) => void;
 }
 

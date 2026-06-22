@@ -1,7 +1,7 @@
 import { apiClient } from "../lib/api-client";
 
 export interface Drug {
-  id: number;
+  id: number | string;
   name: string;
   code: string;
   stockQuantity?: number;
@@ -39,16 +39,16 @@ export interface FetchBookmarkedDrugsParams {
 }
 
 export const fetchBookmarkedDrugs = async (params: FetchBookmarkedDrugsParams) => {
-  const response = await apiClient.get("/drugs/bookmarks", { params });
+  const response = await apiClient.get("/bookmarks", { params });
   return response.data;
 };
 
-export const bookmarkDrug = async (drugId: number) => {
-  const response = await apiClient.post(`/drugs/${drugId}/bookmark`);
+export const bookmarkDrug = async (drugId: number | string) => {
+  const response = await apiClient.post(`/bookmarks/drugs/${drugId}`);
   return response.data;
 };
 
-export const removeDrugBookmark = async (drugId: number) => {
-  const response = await apiClient.delete(`/drugs/${drugId}/bookmark`);
+export const removeDrugBookmark = async (drugId: number | string) => {
+  const response = await apiClient.delete(`/bookmarks/drugs/${drugId}`);
   return response.data;
 };
