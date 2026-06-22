@@ -21,13 +21,13 @@ import lombok.Setter;
 public class Patient extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 20)
-    private String patientCode;
+    private String mrn;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
     @Column(nullable = false, length = 20)
-    private String gender;
+    private String sex;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
@@ -38,11 +38,14 @@ public class Patient extends BaseEntity {
     @Column(length = 20)
     private String phone;
 
-    @Column(length = 100)
-    private String email;
-
     @Column(columnDefinition = "text")
     private String address;
+
+    @Column(name = "height_cm")
+    private Integer heightCm;
+
+    @Column(name = "weight_kg")
+    private Integer weightKg;
 
     @Column(name = "blood_type", length = 10)
     private String bloodType;
@@ -50,6 +53,18 @@ public class Patient extends BaseEntity {
     @Column(name = "insurance_number", unique = true, length = 30)
     private String insuranceNumber;
 
-    @Column(nullable = false, length = 20)
-    private String status = "ACTIVE";
+    @Column(name = "emergency_contact_name", length = 100)
+    private String emergencyContactName;
+
+    @Column(name = "emergency_contact_phone", length = 20)
+    private String emergencyContactPhone;
+
+    @Column(name = "emergency_contact_relation", length = 50)
+    private String emergencyContactRelation;
+
+    @Column(columnDefinition = "text")
+    private String diagnosis;
+
+    @Column(columnDefinition = "text")
+    private String allergies;
 }

@@ -1,6 +1,7 @@
 package com.mediai.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ public class StatsService {
         stats.put("users", userRepository.count());
         stats.put("patients", patientRepository.count());
         stats.put("evaluations", aiEvaluationRepository.count());
+        stats.put("highRiskCount", aiEvaluationRepository.countByRiskLevel("HIGH"));
+        stats.put("mediumRiskCount", aiEvaluationRepository.countByRiskLevel("MEDIUM"));
+        stats.put("lowRiskCount", aiEvaluationRepository.countByRiskLevel("LOW"));
+        stats.put("warningsCount", aiEvaluationRepository.countByRiskLevel("HIGH"));
         return stats;
     }
 
@@ -46,5 +51,10 @@ public class StatsService {
     @Transactional(readOnly = true)
     public Long getEvaluationCount() {
         return aiEvaluationRepository.count();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getRecentEvaluations(int limit) {
+        return aiEvaluationRepository.findRecentEvaluations(limit);
     }
 }

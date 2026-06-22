@@ -136,6 +136,8 @@ public class DrugController {
             @PageableDefault(size = 20) Pageable pageable) {
         var drug = drugService.getDrug(id);
         return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, pageable);
+    }
+
     @GetMapping("/search/by-symptoms")
     public PageResponse<DrugSummaryResponse> searchBySymptoms(
             @RequestParam(required = false) String symptom,
