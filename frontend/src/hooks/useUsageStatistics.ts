@@ -9,17 +9,33 @@ import {
   UsageStatisticsParams
 } from "@/services/usage-statistics.service";
 
-const unwrap = (response: any) => response?.data ?? response ?? {};
+// Sử dụng unknown để đảm bảo an toàn kiểu dữ liệu
+const unwrap = (response: unknown) => {
+  const res = response as { data?: unknown };
+  return res?.data ?? response ?? {};
+};
 
-const toNumber = (value: unknown) => {
+const toNumber = (value: unknown): number => {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const toChartItems = (items: any, fallbackLabels: string[]): UsageChartItem[] => {
-  const source = Array.isArray(items) ? items : [];
+// Interface mô tả cấu trúc dữ liệu trả về từ API Charts
+interface ApiChartItem {
+  label?: string;
+  name?: string;
+  page?: string;
+  action?: string;
+  value?: unknown;
+  count?: unknown;
+  total?: unknown;
+}
+
+const toChartItems = (items: unknown, fallbackLabels: string[]): UsageChartItem[] => {
+  const source = Array.isArray(items) ? (items as ApiChartItem[]) : [];
+  
   if (source.length > 0) {
-    return source.map((item: any, index) => ({
+    return source.map((item, index) => ({
       label: item.label ?? item.name ?? item.page ?? item.action ?? fallbackLabels[index] ?? `Mục ${index + 1}`,
       value: toNumber(item.value ?? item.count ?? item.total)
     }));
@@ -28,9 +44,9 @@ const toChartItems = (items: any, fallbackLabels: string[]): UsageChartItem[] =>
   return fallbackLabels.map((label) => ({ label, value: 0 }));
 };
 
-const toLogItems = (response: any): UsageLogItem[] => {
-  const data = unwrap(response);
-  const items = Array.isArray(data) ? data : data.content ?? data.items ?? [];
+const toLogItems = (response: unknown): UsageLogItem[] => {
+  const data = response as { content?: UsageLogItem[]; items?: UsageLogItem[] };
+  const items = data.content ?? data.items ?? [];
   return Array.isArray(items) ? items : [];
 };
 
@@ -62,8 +78,8 @@ export const useUsageStatistics = (params: UsageStatisticsParams) => {
         fetchUsageAuditLogs({ ...query, page: 0, size: 8 })
       ]);
 
-      const statistics = unwrap(statisticsResponse);
-      const charts = unwrap(chartsResponse);
+      const statistics = unwrap(statisticsResponse) as Record<string, unknown>;
+      const charts = unwrap(chartsResponse) as Record<string, unknown>;
 
       setMetrics([
         { label: "Lượt xem thuốc", value: toNumber(statistics.drugViews ?? statistics.totalDrugViews) },
@@ -71,22 +87,20 @@ export const useUsageStatistics = (params: UsageStatisticsParams) => {
         { label: "Lượt đánh giá AI", value: toNumber(statistics.aiEvaluations ?? statistics.totalAiEvaluations) },
         { label: "Hành động người dùng", value: toNumber(statistics.userActions ?? statistics.totalUserActions) }
       ]);
+      
       setPageViews(toChartItems(charts.pageViews ?? charts.pages, ["Dashboard", "Thuốc", "Bệnh nhân", "Đánh giá AI"]));
       setDrugViews(toChartItems(charts.drugViews ?? charts.topDrugs, ["Paracetamol", "Amoxicillin", "Metformin", "Aspirin"]));
       setActions(toChartItems(charts.actions ?? charts.userActions, ["VIEW", "CREATE", "UPDATE", "DELETE"]));
       setLogs(toLogItems(logsResponse));
+      
     } catch (requestError) {
       console.error("Cannot load usage statistics:", requestError);
       setError("Không thể tải dữ liệu thống kê sử dụng.");
-      setMetrics([
-        { label: "Lượt xem thuốc", value: 0 },
-        { label: "Trang được truy cập", value: 0 },
-        { label: "Lượt đánh giá AI", value: 0 },
-        { label: "Hành động người dùng", value: 0 }
-      ]);
-      setPageViews(toChartItems([], ["Dashboard", "Thuốc", "Bệnh nhân", "Đánh giá AI"]));
-      setDrugViews(toChartItems([], ["Paracetamol", "Amoxicillin", "Metformin", "Aspirin"]));
-      setActions(toChartItems([], ["VIEW", "CREATE", "UPDATE", "DELETE"]));
+      // Reset về giá trị mặc định khi lỗi
+      setMetrics([]);
+      setPageViews([]);
+      setDrugViews([]);
+      setActions([]);
       setLogs([]);
     } finally {
       setLoading(false);
