@@ -161,3 +161,14 @@ create table if not exists patient_allergies (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists drug_bookmarks (
+  id uuid primary key,
+  user_id uuid not null references users(id) on delete cascade,
+  drug_id uuid not null references drugs(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique(user_id, drug_id)
+);
+
+create index if not exists idx_drug_bookmarks_user_id on drug_bookmarks(user_id);
+create index if not exists idx_drug_bookmarks_drug_id on drug_bookmarks(drug_id);
