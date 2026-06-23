@@ -14,7 +14,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.mediai.dto.auditlog.ActivityLogRequest;
 import com.mediai.dto.auditlog.ActivityLogResponse;
 import com.mediai.entity.ActivityLog;
-import com.mediai.entity.ActivityLog.ActionType;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.ActivityLogRepository;
 import com.mediai.repository.UserRepository;
@@ -40,10 +39,11 @@ public class ActivityLogService {
 
         var activityLog = new ActivityLog();
         activityLog.setUser(user);
-        activityLog.setActionType(ActionType.valueOf(request.actionType().toUpperCase()));
+        activityLog.setActionType(request.actionType());   // plain String now
         activityLog.setEntityType(request.entityType());
         activityLog.setEntityId(request.entityId());
         activityLog.setDetails(request.details());
+        activityLog.setResult("SUCCESS");
         activityLog.setIpAddress(getClientIpAddress());
         activityLog.setUserAgent(getUserAgent());
 
@@ -70,7 +70,7 @@ public class ActivityLogService {
     @Transactional(readOnly = true)
     public Page<ActivityLogResponse> getActivityLogsByActionType(String actionType, Pageable pageable) {
         return activityLogRepository
-                .findByActionType(ActionType.valueOf(actionType.toUpperCase()), pageable)
+                .findByActionType(actionType, pageable)
                 .map(this::toResponse);
     }
 
@@ -78,7 +78,7 @@ public class ActivityLogService {
     public Page<ActivityLogResponse> getActivityLogsByUserAndActionType(UUID userId, String actionType,
             Pageable pageable) {
         return activityLogRepository
-                .findByUser_IdAndActionType(userId, ActionType.valueOf(actionType.toUpperCase()), pageable)
+                .findByUser_IdAndActionType(userId, actionType, pageable)
                 .map(this::toResponse);
     }
 
@@ -95,7 +95,7 @@ public class ActivityLogService {
                 log.getId(),
                 log.getUser().getId(),
                 log.getUser().getFullName(),
-                log.getActionType().toString(),
+                log.getActionType(),          // now String
                 log.getEntityType(),
                 log.getEntityId(),
                 log.getDetails(),

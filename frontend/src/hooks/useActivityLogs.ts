@@ -8,48 +8,41 @@ export const useActivityLogs = () => {
 
   useEffect(() => {
     let cancelled = false;
-
     const fetchLogs = async () => {
       try {
         setLoading(true);
-
+        // BE trả PageResponse: { content, totalElements, ... }
         const response = await apiClient.get("/activity-logs", {
-          params: { page: 0, size: 5, sort: "createdAt,desc" },
+          params: { page: 0, size: 8, sort: "createdAt,desc" },
         });
-
         if (cancelled) return;
-
-        if (response.data && response.data.success) {
-          const logs = response.data.data || [];
-          const mapped: ActivityItem[] = logs.map((log: any) => {
-            const time = new Date(log.createdAt).toLocaleString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              day: "2-digit",
-              month: "2-digit",
-            });
-            return {
-              id: log.id,
-              title: `${log.actionType} - ${log.entityType} bởi ${log.userName}`,
-              time,
-            };
-          });
-          setActivities(mapped);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("Failed to fetch activity logs:", err);
-          setActivities([]);
-        }
+        const body = response.data;
+        const logs: any[] = body.content ?? body.data ?? [];
+        const mapped: ActivityItem[] = logs.map((log) => {
+          const time = log.createdAt
+            ? new Date(log.createdAt).toLocaleString("vi-VN", {
+                hour: "2-digit", minute: "2-digit",
+                day: "2-digit", month: "2-digit",
+              })
+            : "";
+          // BE trả về action / actionType tuỳ controller
+          const action = log.action ?? log.actionType ?? "Hoạt động";
+          const detail = log.detail ?? log.details ?? "";
+          return {
+            id: String(log.id),
+            title: detail ? `${action}: ${detail}` : action,
+            time,
+          };
+        });
+        setActivities(mapped);
+      } catch {
+        if (!cancelled) setActivities([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
-
     fetchLogs();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return { activities, loading };

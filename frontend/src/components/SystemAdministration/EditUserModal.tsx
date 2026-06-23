@@ -3,17 +3,17 @@ import { X, Mail, Lock, User } from 'lucide-react';
 import { apiClient } from '../../lib/api-client';
 
 // Định nghĩa kiểu dữ liệu cho User và Props
-interface User {
+export interface EditableUser {
   id: string;
   fullName: string;
   email: string;
   role: string;
-  status: string;
+  department?: string;
 }
 
 interface Props {
   isOpen: boolean;
-  user: User | null;
+  user: EditableUser | null;
   onClose: () => void;
   onSuccess: () => void;
 }

@@ -5,58 +5,57 @@ interface DashboardStats {
   users: number;
   patients: number;
   evaluations: number;
-  warningsCount: number; // Đã thêm thuộc tính này vào đây
-}
-
-interface DashboardData {
-  stats: DashboardStats;
+  warningsCount: number;
 }
 
 export const useDashboard = () => {
-  const [data, setData] = useState<DashboardData>({
-    stats: { users: 0, patients: 0, evaluations: 0, warningsCount: 0 },
+  const [stats, setStats] = useState<DashboardStats>({
+    users: 0, patients: 0, evaluations: 0, warningsCount: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-
-    const fetchDashboard = async () => {
+    const fetchAll = async () => {
       try {
         setLoading(true);
-        setError(null);
 
-        const response = await apiClient.get("/stats/dashboard");
+        // Gọi song song 3 endpoints
+        const [patientsRes, evalsRes, statsRes] = await Promise.allSettled([
+          apiClient.get("/patients?page=0&size=1"),
+          apiClient.get("/ai/evaluations?page=0&size=1"),
+          apiClient.get("/stats/dashboard"),
+        ]);
 
         if (cancelled) return;
 
-        if (response.data && response.data.success) {
-          const payload = response.data.data;
-          setData({
-            stats: {
-              users: payload.users || 0,
-              patients: payload.patients || 0,
-              evaluations: payload.evaluations || 0,
-              warningsCount: payload.warningsCount || 0,
-            },
-          });
+        let patients = 0, evaluations = 0, warningsCount = 0, users = 0;
+
+        if (patientsRes.status === "fulfilled") {
+          patients = patientsRes.value.data.totalElements ?? 0;
         }
+        if (evalsRes.status === "fulfilled") {
+          evaluations = evalsRes.value.data.totalElements ?? 0;
+        }
+        if (statsRes.status === "fulfilled" && statsRes.value.data.success) {
+          const d = statsRes.value.data.data;
+          users         = d?.users         ?? 0;
+          patients      = d?.patients      ?? patients;
+          evaluations   = d?.evaluations   ?? evaluations;
+          warningsCount = d?.warningsCount ?? d?.warnings ?? 0;
+        }
+
+        setStats({ users, patients, evaluations, warningsCount });
       } catch (err) {
-        if (!cancelled) {
-          console.error("Failed to fetch dashboard:", err);
-          setError("Không thể tải thống kê");
-        }
+        if (!cancelled) setError("Không thể tải thống kê");
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
-
-    fetchDashboard();
-    return () => {
-      cancelled = true;
-    };
+    fetchAll();
+    return () => { cancelled = true; };
   }, []);
 
-  return { ...data, loading, error };
+  return { stats, loading, error };
 };

@@ -28,12 +28,17 @@ export const DashboardPage = () => {
         if (cancelled) return;
 
         if (response.data && response.data.success) {
-          const rows: EvaluationRow[] = (response.data.data || []).map((e: any) => ({
-            id: String(e.id),
-            patientName: e.patientName || "N/A",
-            date: new Date(e.date).toLocaleDateString("vi-VN"),
-            riskLevel: (e.riskLevel as EvaluationRow["riskLevel"]) || "LOW",
-          }));
+          const rows: EvaluationRow[] = (response.data.data || []).map((e: any) => {
+            const raw = (e.riskLevel as string ?? "LOW").toUpperCase();
+            const level: EvaluationRow["riskLevel"] =
+              raw === "HIGH" ? "HIGH" : raw === "MODERATE" || raw === "MEDIUM" ? "MEDIUM" : "LOW";
+            return {
+              id: String(e.id),
+              patientName: e.patientName || "N/A",
+              date: new Date(e.date).toLocaleDateString("vi-VN"),
+              riskLevel: level,
+            };
+          });
           setRecentEvals(rows);
         }
       } catch (err) {
