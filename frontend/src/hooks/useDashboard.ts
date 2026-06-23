@@ -5,17 +5,16 @@ interface DashboardStats {
   users: number;
   patients: number;
   evaluations: number;
+  warningsCount: number; // Đã thêm thuộc tính này vào đây
 }
 
 interface DashboardData {
   stats: DashboardStats;
-  warningsCount: number;
 }
 
 export const useDashboard = () => {
   const [data, setData] = useState<DashboardData>({
-    stats: { users: 0, patients: 0, evaluations: 0 },
-    warningsCount: 0,
+    stats: { users: 0, patients: 0, evaluations: 0, warningsCount: 0 },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +38,8 @@ export const useDashboard = () => {
               users: payload.users || 0,
               patients: payload.patients || 0,
               evaluations: payload.evaluations || 0,
+              warningsCount: payload.warningsCount || 0,
             },
-            warningsCount: payload.warningsCount || 0,
           });
         }
       } catch (err) {
