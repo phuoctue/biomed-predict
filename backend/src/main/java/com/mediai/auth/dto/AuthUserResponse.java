@@ -11,11 +11,17 @@ public record AuthUserResponse(
         String department) {
 
     public static AuthUserResponse from(User user) {
+        // The `role` field on User is now a JPA association. We resolve the
+        // strongly typed enum here so the rest of the application keeps
+        // the same DTO contract.
+        var role = user.getRole() == null
+                ? UserRole.MEDICAL_STAFF
+                : UserRole.fromDbName(user.getRole().getName());
         return new AuthUserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole(),
+                role,
                 user.getDepartment());
     }
 }

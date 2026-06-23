@@ -29,7 +29,10 @@ public final class UserSpecifications {
             if (role == null) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get("role"), role);
+            // The User entity now stores the role as a ManyToOne association
+            // to the `roles` table, so we filter by the role name on the
+            // associated entity rather than the previous enum-typed field.
+            return cb.equal(root.get("role").get("name"), role.name());
         };
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.mediai.entity.User;
+import com.mediai.entity.UserRole;
 
 public record UserPrincipal(
         Long id,
@@ -18,13 +19,34 @@ public record UserPrincipal(
         String role) implements UserDetails {
 
     public static UserPrincipal from(User user) {
+        // The `role` field on the User entity is now a JPA association to
+        // the `roles` table.  We materialise the role name lazily here and
+        // gracefully fall back to MEDICAL_STAFF if the association is not
+        // loaded (which can happen in unit tests or in some Hibernate
+        // edge cases).
+        String roleName = resolveRoleName(user);
         return new UserPrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.getFullName(),
                 user.getDepartment(),
-                user.getRole().name());
+                roleName);
+    }
+
+    private static String resolveRoleName(User user) {
+        if (user == null) {
+            return UserRole.MEDICAL_STAFF.name();
+        }
+        var association = user.getRole();
+        if (association == null || association.getName() == null || association.getName().isBlank()) {
+            return UserRole.MEDICAL_STAFF.name();
+        }
+        return UserRole.fromDbName(association.getName()).name();
+    }
+
+    public String role() {
+        return role;
     }
 
     @Override
