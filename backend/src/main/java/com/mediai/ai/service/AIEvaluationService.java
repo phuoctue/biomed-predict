@@ -75,6 +75,7 @@ public class AIEvaluationService {
 
         var prompt          = buildPrompt(aiPayload);
         var start           = System.nanoTime();
+        System.out.println("DEBUG: AI Payload = " + toJson(aiPayload));
         var aiResponse      = aiServiceClient.evaluate(aiPayload);
         var processingTimeMs = (System.nanoTime() - start) / 1_000_000L;
 

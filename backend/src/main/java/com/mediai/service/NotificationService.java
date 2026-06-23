@@ -40,10 +40,10 @@ public class NotificationService {
         notification.setMessage(request.message());
         notification.setType(NotificationType.valueOf(request.type().toUpperCase()));
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setSentAt(LocalDateTime.now());
+        // sentAt is handled by BaseEntity's createdAt
         notification.setRelatedEntityType(request.relatedEntityType());
         notification.setRelatedEntityId(request.relatedEntityId());
-        notification.setActionUrl(request.actionUrl());
+        // notification.setActionUrl(request.actionUrl()); // TODO: Re-enable when action_url column exists
 
         return toResponse(notificationRepository.save(notification));
     }
@@ -64,7 +64,7 @@ public class NotificationService {
     public NotificationResponse markAsRead(UUID notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.READ);
-        notification.setReadAt(LocalDateTime.now());
+        // notification.setReadAt(LocalDateTime.now()); // TODO: Re-enable when read_at column exists
         return toResponse(notificationRepository.save(notification));
     }
 
@@ -99,11 +99,11 @@ public class NotificationService {
                 notification.getMessage(),
                 notification.getType().toString(),
                 notification.getStatus().toString(),
-                notification.getReadAt(),
-                notification.getSentAt(),
+                null, // notification.getReadAt(), // TODO: Re-enable when read_at column exists
+                createdAtLdt, // Use createdAt as sentAt
                 notification.getRelatedEntityType(),
                 notification.getRelatedEntityId(),
-                notification.getActionUrl(),
+                null, // notification.getActionUrl(), // TODO: Re-enable when action_url column exists
                 createdAtLdt);
     }
 }

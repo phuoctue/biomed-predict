@@ -30,18 +30,15 @@ public class Notification extends BaseEntity {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
+    @Column(name = "type", nullable = false, length = 50)
     private NotificationType type;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private NotificationStatus status = NotificationStatus.UNREAD;
 
-    @Column(name = "read_at")
-    private LocalDateTime readAt;
-
-    @Column(name = "sent_at", nullable = false)
-    private LocalDateTime sentAt;
+    // sentAt will use createdAt from BaseEntity
+    // No separate column mapping needed
 
     @Column(name = "related_entity_type", length = 50)
     private String relatedEntityType;
@@ -49,8 +46,12 @@ public class Notification extends BaseEntity {
     @Column(name = "related_entity_id")
     private UUID relatedEntityId;
 
-    @Column(name = "action_url", length = 500)
-    private String actionUrl;
+    // TODO: These fields need to be added to database in future migration
+    // @Column(name = "read_at")
+    // private LocalDateTime readAt;
+    
+    // @Column(name = "action_url", length = 500)
+    // private String actionUrl;
 
     public enum NotificationType {
         EVALUATION_COMPLETED,
