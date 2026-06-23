@@ -2,13 +2,12 @@ package com.mediai.ai.dto;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 public record AIEvaluationResponse(
-        UUID id,
-        UUID patientId,
+        Long id,
+        Long patientId,
         String patientName,
-        UUID drugId,
+        Long drugId,
         String drugName,
         String dosage,
         String modelName,

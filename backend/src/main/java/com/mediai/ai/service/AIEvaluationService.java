@@ -6,11 +6,9 @@ import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +25,6 @@ import com.mediai.ai.dto.EvaluationRequestPayload;
 import com.mediai.ai.dto.EvaluationResponsePayload;
 import com.mediai.ai.dto.ExplainRequestPayload;
 import com.mediai.ai.dto.ExplainResponsePayload;
-import com.mediai.dto.common.PageResponse;
 import com.mediai.entity.AIEvaluation;
 import com.mediai.entity.Drug;
 import com.mediai.entity.Patient;
@@ -103,7 +100,7 @@ public class AIEvaluationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AIEvaluationSummaryResponse> listEvaluations(UUID patientId, UUID drugId, Pageable pageable) {
+    public Page<AIEvaluationSummaryResponse> listEvaluations(Long patientId, Long drugId, Pageable pageable) {
         Specification<AIEvaluation> specification = AIEvaluationSpecifications.hasPatientId(patientId)
                 .and(AIEvaluationSpecifications.hasDrugId(drugId));
 
@@ -112,27 +109,27 @@ public class AIEvaluationService {
     }
 
     @Transactional(readOnly = true)
-    public AIEvaluationResponse getEvaluation(UUID id) {
+    public AIEvaluationResponse getEvaluation(Long id) {
         return toResponse(findEvaluation(id), null);
     }
 
     @Transactional(readOnly = true)
-    public AIEvaluationSummaryResponse getSummary(UUID id) {
+    public AIEvaluationSummaryResponse getSummary(Long id) {
         return toSummaryResponse(findEvaluation(id));
     }
 
     @Transactional(readOnly = true)
-    public List<String> getWarnings(UUID id) {
+    public List<String> getWarnings(Long id) {
         return readStringList(findEvaluation(id).getWarningsJson());
     }
 
     @Transactional(readOnly = true)
-    public List<String> getRecommendations(UUID id) {
+    public List<String> getRecommendations(Long id) {
         return readStringList(findEvaluation(id).getAlternativesJson());
     }
 
     @Transactional
-    public AIEvaluationResponse reanalyze(UUID id, UserPrincipal principal) {
+    public AIEvaluationResponse reanalyze(Long id, UserPrincipal principal) {
         var previous = findEvaluation(id);
         var labs = readStringMap(previous.getLabsJson());
         var request = new AIEvaluationRequest(
@@ -202,17 +199,17 @@ public class AIEvaluationService {
                 evaluation.getCreatedAt());
     }
 
-    private AIEvaluation findEvaluation(UUID id) {
+    private AIEvaluation findEvaluation(Long id) {
         return aiEvaluationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AI evaluation not found."));
     }
 
-    private Patient findPatient(UUID id) {
+    private Patient findPatient(Long id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found."));
     }
 
-    private Drug findDrug(UUID id) {
+    private Drug findDrug(Long id) {
         return drugRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug not found."));
     }
@@ -223,19 +220,15 @@ public class AIEvaluationService {
     }
 
     private Integer calculateAge(LocalDate dateOfBirth) {
-        if (dateOfBirth == null) {
-            return null;
-        }
+        if (dateOfBirth == null) return null;
         return Period.between(dateOfBirth, LocalDate.now()).getYears();
     }
 
     private List<String> parseAllergies(String allergies) {
-        if (allergies == null || allergies.isBlank()) {
-            return List.of();
-        }
+        if (allergies == null || allergies.isBlank()) return List.of();
         return List.of(allergies.split("[,;\\n]+")).stream()
                 .map(String::trim)
-                .filter(value -> !value.isBlank())
+                .filter(v -> !v.isBlank())
                 .toList();
     }
 
@@ -244,16 +237,12 @@ public class AIEvaluationService {
     }
 
     private String normalizeRiskLevel(String riskLevel) {
-        if (riskLevel == null || riskLevel.isBlank()) {
-            return "moderate";
-        }
+        if (riskLevel == null || riskLevel.isBlank()) return "moderate";
         return riskLevel.trim().toLowerCase();
     }
 
     private Integer estimateConfidence(Integer suitabilityScore) {
-        if (suitabilityScore == null) {
-            return null;
-        }
+        if (suitabilityScore == null) return null;
         return Math.max(55, Math.min(95, suitabilityScore - 4));
     }
 
@@ -264,29 +253,25 @@ public class AIEvaluationService {
     private String toJson(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("Unable to serialize AI payload.", exception);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Unable to serialize AI payload.", e);
         }
     }
 
     private List<String> readStringList(String json) {
-        if (json == null || json.isBlank()) {
-            return List.of();
-        }
+        if (json == null || json.isBlank()) return List.of();
         try {
             return objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        } catch (IOException exception) {
+        } catch (IOException e) {
             return List.of();
         }
     }
 
     private Map<String, String> readStringMap(String json) {
-        if (json == null || json.isBlank()) {
-            return Map.of();
-        }
+        if (json == null || json.isBlank()) return Map.of();
         try {
             return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {});
-        } catch (IOException exception) {
+        } catch (IOException e) {
             return Collections.emptyMap();
         }
     }

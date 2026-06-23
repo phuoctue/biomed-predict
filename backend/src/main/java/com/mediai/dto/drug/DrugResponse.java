@@ -1,12 +1,11 @@
 package com.mediai.dto.drug;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import com.mediai.entity.Drug;
 
 public record DrugResponse(
-        UUID id,
+        Long id,
         String code,
         String name,
         String genericName,

@@ -1,7 +1,6 @@
 package com.mediai.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,7 +50,7 @@ public class DrugService {
     }
 
     @Transactional(readOnly = true)
-    public DrugResponse getDrug(UUID id) {
+    public DrugResponse getDrug(Long id) {
         return DrugResponse.from(findDrug(id));
     }
 
@@ -65,7 +64,7 @@ public class DrugService {
     }
 
     @Transactional
-    public DrugResponse updateDrug(UUID id, DrugRequest request) {
+    public DrugResponse updateDrug(Long id, DrugRequest request) {
         var drug = findDrug(id);
         validateUniqueCode(request.code(), id);
 
@@ -74,31 +73,32 @@ public class DrugService {
     }
 
     @Transactional
-    public void deleteDrug(UUID id) {
+    public void deleteDrug(Long id) {
         drugRepository.delete(findDrug(id));
     }
 
     @Transactional(readOnly = true)
-    public List<DrugInteractionResponse> getInteractions(UUID drugId) {
+    public List<DrugInteractionResponse> getInteractions(Long drugId) {
         findDrug(drugId);
-        return drugInteractionRepository.findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
+        return drugInteractionRepository
+                .findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
                 .map(DrugInteractionResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<DrugSummaryResponse> getDrugsByIngredient(UUID ingredientId) {
+    public List<DrugSummaryResponse> getDrugsByIngredient(Long ingredientId) {
         return drugRepository.findDistinctByDrugIngredients_Ingredient_Id(ingredientId).stream()
                 .map(DrugSummaryResponse::from)
                 .toList();
     }
 
-    private Drug findDrug(UUID id) {
+    private Drug findDrug(Long id) {
         return drugRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug not found."));
     }
 
-    private void validateUniqueCode(String code, UUID currentId) {
+    private void validateUniqueCode(String code, Long currentId) {
         var existing = drugRepository.findByCodeIgnoreCase(code);
         if (existing.isPresent() && (currentId == null || !existing.get().getId().equals(currentId))) {
             throw new IllegalArgumentException("Drug code already exists.");

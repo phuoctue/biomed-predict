@@ -12,12 +12,12 @@ import com.mediai.entity.Notification;
 import com.mediai.entity.Notification.NotificationStatus;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, UUID> {
-    Page<Notification> findByRecipientId(UUID recipientId, Pageable pageable);
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
+    Page<Notification> findByRecipient_Id(Long recipientId, Pageable pageable);
 
-    Page<Notification> findByRecipientIdAndStatus(UUID recipientId, NotificationStatus status, Pageable pageable);
+    Page<Notification> findByRecipient_IdAndStatus(Long recipientId, NotificationStatus status, Pageable pageable);
 
-    List<Notification> findByRecipientIdAndStatusOrderByCreatedAtDesc(UUID recipientId, NotificationStatus status);
+    List<Notification> findByRecipient_IdAndStatusOrderByCreatedAtDesc(Long recipientId, NotificationStatus status);
 
-    Long countByRecipientIdAndStatus(UUID recipientId, NotificationStatus status);
+    Long countByRecipient_IdAndStatus(Long recipientId, NotificationStatus status);
 }

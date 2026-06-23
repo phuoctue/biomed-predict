@@ -27,20 +27,12 @@ public class MedicalRecordController {
             @RequestBody MedicalRecord medicalRecord) {
         MedicalRecord saved = medicalRecordService.createMedicalRecord(medicalRecord);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.<MedicalRecord>builder()
-                .success(true)
-                .message("Medical record created successfully")
-                .data(saved)
-                .build());
+                .body(ApiResponse.ok("Medical record created successfully.", saved));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<MedicalRecord>> getMedicalRecord(@PathVariable Long id) {
         MedicalRecord record = medicalRecordService.getMedicalRecordById(id);
-        return ResponseEntity.ok(ApiResponse.<MedicalRecord>builder()
-            .success(true)
-            .message("Medical record retrieved successfully")
-            .data(record)
-            .build());
+        return ResponseEntity.ok(ApiResponse.ok("Medical record retrieved successfully.", record));
     }
 }

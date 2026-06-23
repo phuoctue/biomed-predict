@@ -29,36 +29,34 @@ public class PrescriptionController {
     public ResponseEntity<ApiResponse<PrescriptionResponse>> createPrescription(
             @RequestBody CreatePrescriptionRequest request) {
         Prescription prescription = Prescription.builder()
-            .prescriptionCode(CodeGenerator.generatePrescriptionCode())
-            .status("DRAFT")
-            .note(request.getNote())
-            .build();
+                .prescriptionCode(CodeGenerator.generatePrescriptionCode())
+                .status("DRAFT")
+                .note(request.getNote())
+                .build();
 
         Prescription saved = prescriptionService.createPrescription(prescription);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.<PrescriptionResponse>builder()
-                .success(true)
-                .message("Prescription created successfully")
-                .data(toResponse(saved))
-                .build());
+                .body(ApiResponse.ok("Prescription created successfully.", toResponse(saved)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<PrescriptionResponse>> getPrescription(@PathVariable Long id) {
         Prescription prescription = prescriptionService.getPrescriptionById(id);
-        return ResponseEntity.ok(ApiResponse.<PrescriptionResponse>builder()
-            .success(true)
-            .message("Prescription retrieved successfully")
-            .data(toResponse(prescription))
-            .build());
+        return ResponseEntity.ok(
+                ApiResponse.ok("Prescription retrieved successfully.", toResponse(prescription)));
     }
 
     private PrescriptionResponse toResponse(Prescription prescription) {
         PrescriptionResponse response = new PrescriptionResponse();
         response.setId(prescription.getId());
         response.setPrescriptionCode(prescription.getPrescriptionCode());
-        response.setMedicalRecordId(prescription.getMedicalRecord().getId());
-        response.setDoctorId(prescription.getDoctor().getId());
+        // medicalRecord and doctor may be null if not set (e.g. draft)
+        if (prescription.getMedicalRecord() != null) {
+            response.setMedicalRecordId(prescription.getMedicalRecord().getId());
+        }
+        if (prescription.getDoctor() != null) {
+            response.setDoctorId(prescription.getDoctor().getId());
+        }
         response.setStatus(prescription.getStatus());
         response.setNote(prescription.getNote());
         return response;

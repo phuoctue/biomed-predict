@@ -50,19 +50,19 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipientId(userId, pageable)
+    public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
+        return notificationRepository.findByRecipient_Id(userId, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipientIdAndStatus(userId, NotificationStatus.UNREAD, pageable)
+    public Page<NotificationResponse> getUnreadNotifications(Long userId, Pageable pageable) {
+        return notificationRepository.findByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional
-    public NotificationResponse markAsRead(UUID notificationId) {
+    public NotificationResponse markAsRead(Long notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.READ);
         notification.setReadAt(LocalDateTime.now());
@@ -70,23 +70,23 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsArchived(UUID notificationId) {
+    public void markAsArchived(Long notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.ARCHIVED);
         notificationRepository.save(notification);
     }
 
     @Transactional
-    public void deleteNotification(UUID notificationId) {
+    public void deleteNotification(Long notificationId) {
         notificationRepository.deleteById(notificationId);
     }
 
     @Transactional(readOnly = true)
-    public Long getUnreadCount(UUID userId) {
-        return notificationRepository.countByRecipientIdAndStatus(userId, NotificationStatus.UNREAD);
+    public Long getUnreadCount(Long userId) {
+        return notificationRepository.countByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD);
     }
 
-    private Notification findNotification(UUID id) {
+    private Notification findNotification(Long id) {
         return notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found."));
     }

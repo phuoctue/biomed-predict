@@ -1,7 +1,6 @@
 package com.mediai.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,27 +32,21 @@ public class IngredientService {
     @Transactional(readOnly = true)
     public PageResponse<IngredientResponse> listIngredients(String keyword, Pageable pageable) {
         Specification<Ingredient> specification = IngredientSpecifications.keywordContains(keyword);
-        Page<IngredientResponse> page = ingredientRepository.findAll(specification, pageable).map(IngredientResponse::from);
-        return PageResponse.ok(
-                "Ingredients retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        Page<IngredientResponse> page = ingredientRepository.findAll(specification, pageable)
+                .map(IngredientResponse::from);
+        return PageResponse.ok("Ingredients retrieved successfully.", page.getContent(),
+                page.getNumber(), page.getSize(), page.getTotalElements(),
+                page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @Transactional(readOnly = true)
-    public IngredientResponse getIngredient(UUID id) {
+    public IngredientResponse getIngredient(Long id) {
         return IngredientResponse.from(findIngredient(id));
     }
 
     @Transactional
     public IngredientResponse createIngredient(IngredientRequest request) {
         validateUniqueCode(request.code(), null);
-
         var ingredient = new Ingredient();
         ingredient.setCode(request.code());
         ingredient.setName(request.name());
@@ -62,7 +55,7 @@ public class IngredientService {
     }
 
     @Transactional
-    public IngredientResponse updateIngredient(UUID id, IngredientRequest request) {
+    public IngredientResponse updateIngredient(Long id, IngredientRequest request) {
         var ingredient = findIngredient(id);
         validateUniqueCode(request.code(), id);
         ingredient.setCode(request.code());
@@ -72,24 +65,24 @@ public class IngredientService {
     }
 
     @Transactional
-    public void deleteIngredient(UUID id) {
+    public void deleteIngredient(Long id) {
         ingredientRepository.delete(findIngredient(id));
     }
 
     @Transactional(readOnly = true)
-    public List<DrugSummaryResponse> getDrugsByIngredient(UUID ingredientId) {
+    public List<DrugSummaryResponse> getDrugsByIngredient(Long ingredientId) {
         findIngredient(ingredientId);
         return drugRepository.findDistinctByDrugIngredients_Ingredient_Id(ingredientId).stream()
                 .map(DrugSummaryResponse::from)
                 .toList();
     }
 
-    private Ingredient findIngredient(UUID id) {
+    private Ingredient findIngredient(Long id) {
         return ingredientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ingredient not found."));
     }
 
-    private void validateUniqueCode(String code, UUID currentId) {
+    private void validateUniqueCode(String code, Long currentId) {
         var existing = ingredientRepository.findByCodeIgnoreCase(code);
         if (existing.isPresent() && (currentId == null || !existing.get().getId().equals(currentId))) {
             throw new IllegalArgumentException("Ingredient code already exists.");

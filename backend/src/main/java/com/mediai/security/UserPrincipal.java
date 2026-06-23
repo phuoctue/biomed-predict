@@ -2,7 +2,6 @@ package com.mediai.security;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.mediai.entity.User;
 
 public record UserPrincipal(
-        UUID id,
+        Long id,
         String email,
         String password,
         String fullName,

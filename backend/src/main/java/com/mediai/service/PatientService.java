@@ -1,7 +1,6 @@
 package com.mediai.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mediai.dto.common.PageResponse;
+import com.mediai.dto.patient.ClinicalSummaryResponse;
 import com.mediai.dto.patient.CreatePatientRequest;
 import com.mediai.dto.patient.PatientEvaluationSummaryResponse;
 import com.mediai.dto.patient.PatientResponse;
 import com.mediai.dto.patient.PatientSummaryResponse;
 import com.mediai.dto.patient.UpdatePatientRequest;
-import com.mediai.entity.AIEvaluation;
 import com.mediai.entity.Patient;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.AIEvaluationRepository;
@@ -49,7 +48,7 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public PatientResponse getPatient(UUID id) {
+    public PatientResponse getPatient(Long id) {
         return PatientResponse.from(findPatient(id));
     }
 
@@ -59,36 +58,36 @@ public class PatientService {
 
         var patient = new Patient();
         applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
-                request.citizenId(),
-                request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
-                request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
-                request.emergencyContactRelation(), request.diagnosis(), request.allergies());
+                request.citizenId(), request.phone(), request.address(), request.heightCm(), request.weightKg(),
+                request.bloodType(), request.insuranceNumber(), request.emergencyContactName(),
+                request.emergencyContactPhone(), request.emergencyContactRelation(),
+                request.diagnosis(), request.allergies());
 
         return PatientResponse.from(patientRepository.save(patient));
     }
 
     @Transactional
-    public PatientResponse updatePatient(UUID id, UpdatePatientRequest request) {
+    public PatientResponse updatePatient(Long id, UpdatePatientRequest request) {
         var patient = findPatient(id);
         validateUniqueIdentifiers(request.mrn(), request.citizenId(), id);
 
         applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
-                request.citizenId(),
-                request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
-                request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
-                request.emergencyContactRelation(), request.diagnosis(), request.allergies());
+                request.citizenId(), request.phone(), request.address(), request.heightCm(), request.weightKg(),
+                request.bloodType(), request.insuranceNumber(), request.emergencyContactName(),
+                request.emergencyContactPhone(), request.emergencyContactRelation(),
+                request.diagnosis(), request.allergies());
 
         return PatientResponse.from(patientRepository.save(patient));
     }
 
     @Transactional
-    public void deletePatient(UUID id) {
+    public void deletePatient(Long id) {
         var patient = findPatient(id);
         patientRepository.delete(patient);
     }
 
     @Transactional(readOnly = true)
-    public PatientSummaryResponse getSummary(UUID id) {
+    public PatientSummaryResponse getSummary(Long id) {
         var patient = findPatient(id);
         var history = aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
@@ -98,17 +97,17 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public List<PatientEvaluationSummaryResponse> getAiHistory(UUID id) {
+    public List<PatientEvaluationSummaryResponse> getAiHistory(Long id) {
         return aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public com.mediai.dto.patient.ClinicalSummaryResponse getClinicalSummary(String mrn) {
+    public ClinicalSummaryResponse getClinicalSummary(String mrn) {
         var patient = patientRepository.findByMrnIgnoreCase(mrn)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with MRN: " + mrn));
-        
+
         List<String> conditions = List.of();
         if (patient.getDiagnosis() != null && !patient.getDiagnosis().isBlank()) {
             conditions = List.of(patient.getDiagnosis().split("[,;\\n]+")).stream()
@@ -128,8 +127,8 @@ public class PatientService {
                 if (matcher.find()) {
                     egfr = Integer.parseInt(matcher.group(1));
                 }
-            } catch (Exception e) {
-                // ignore
+            } catch (Exception ignored) {
+                // keep default
             }
         }
         if (diagLower.contains("/") || diagLower.contains("huyết áp") || diagLower.contains("blood pressure")) {
@@ -139,26 +138,20 @@ public class PatientService {
                 if (matcher.find()) {
                     bp = matcher.group(1);
                 }
-            } catch (Exception e) {
-                // ignore
+            } catch (Exception ignored) {
+                // keep default
             }
         }
 
-        return new com.mediai.dto.patient.ClinicalSummaryResponse(
-                patient.getMrn(),
-                patient.getFullName(),
-                conditions,
-                egfr,
-                bp
-        );
+        return new ClinicalSummaryResponse(patient.getMrn(), patient.getFullName(), conditions, egfr, bp);
     }
 
-    private Patient findPatient(UUID id) {
+    private Patient findPatient(Long id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found."));
     }
 
-    private void validateUniqueIdentifiers(String mrn, String citizenId, UUID currentId) {
+    private void validateUniqueIdentifiers(String mrn, String citizenId, Long currentId) {
         var existingByMrn = patientRepository.findByMrnIgnoreCase(mrn);
         if (existingByMrn.isPresent() && (currentId == null || !existingByMrn.get().getId().equals(currentId))) {
             throw new IllegalArgumentException("MRN already exists.");
@@ -173,23 +166,11 @@ public class PatientService {
         }
     }
 
-    private void applyRequest(Patient patient,
-            String mrn,
-            String fullName,
-            java.time.LocalDate dateOfBirth,
-            String sex,
-            String citizenId,
-            String phone,
-            String address,
-            Integer heightCm,
-            Integer weightKg,
-            String bloodType,
-            String insuranceNumber,
-            String emergencyContactName,
-            String emergencyContactPhone,
-            String emergencyContactRelation,
-            String diagnosis,
-            String allergies) {
+    private void applyRequest(Patient patient, String mrn, String fullName,
+            java.time.LocalDate dateOfBirth, String sex, String citizenId, String phone, String address,
+            Integer heightCm, Integer weightKg, String bloodType, String insuranceNumber,
+            String emergencyContactName, String emergencyContactPhone, String emergencyContactRelation,
+            String diagnosis, String allergies) {
         patient.setMrn(mrn);
         patient.setFullName(fullName);
         patient.setDateOfBirth(dateOfBirth);

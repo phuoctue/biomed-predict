@@ -12,46 +12,41 @@ import com.mediai.dto.vitalsign.request.CreateVitalSignRequest;
 import com.mediai.dto.vitalsign.response.VitalSignResponse;
 import com.mediai.entity.VitalSign;
 
-import lombok.RequiredArgsConstructor;
-
 @RestController
 @RequestMapping("/api/vital-signs")
-@RequiredArgsConstructor
 public class VitalSignController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<VitalSignResponse>> createVitalSign(
             @RequestBody CreateVitalSignRequest request) {
+        // VitalSign requires a MedicalRecord reference — here we build a transient object
+        // for immediate response; actual persistence should go through MedicalRecordService
         VitalSign vitalSign = VitalSign.builder()
-            .height(request.getHeight())
-            .weight(request.getWeight())
-            .temperature(request.getTemperature())
-            .systolicBP(request.getSystolicBP())
-            .diastolicBP(request.getDiastolicBP())
-            .heartRate(request.getHeartRate())
-            .respiratoryRate(request.getRespiratoryRate())
-            .spo2(request.getSpo2())
-            .build();
+                .height(request.getHeight())
+                .weight(request.getWeight())
+                .temperature(request.getTemperature())
+                .systolicBP(request.getSystolicBP())
+                .diastolicBP(request.getDiastolicBP())
+                .heartRate(request.getHeartRate())
+                .respiratoryRate(request.getRespiratoryRate())
+                .spo2(request.getSpo2())
+                .build();
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.<VitalSignResponse>builder()
-                .success(true)
-                .message("Vital sign recorded successfully")
-                .data(toResponse(vitalSign))
-                .build());
+                .body(ApiResponse.ok("Vital sign recorded successfully.", toResponse(vitalSign)));
     }
 
-    private VitalSignResponse toResponse(VitalSign vitalSign) {
+    private VitalSignResponse toResponse(VitalSign vs) {
         VitalSignResponse response = new VitalSignResponse();
-        response.setId(vitalSign.getId());
-        response.setHeight(vitalSign.getHeight());
-        response.setWeight(vitalSign.getWeight());
-        response.setTemperature(vitalSign.getTemperature());
-        response.setSystolicBP(vitalSign.getSystolicBP());
-        response.setDiastolicBP(vitalSign.getDiastolicBP());
-        response.setHeartRate(vitalSign.getHeartRate());
-        response.setRespiratoryRate(vitalSign.getRespiratoryRate());
-        response.setSpo2(vitalSign.getSpo2());
+        response.setId(vs.getId());
+        response.setHeight(vs.getHeight());
+        response.setWeight(vs.getWeight());
+        response.setTemperature(vs.getTemperature());
+        response.setSystolicBP(vs.getSystolicBP());
+        response.setDiastolicBP(vs.getDiastolicBP());
+        response.setHeartRate(vs.getHeartRate());
+        response.setRespiratoryRate(vs.getRespiratoryRate());
+        response.setSpo2(vs.getSpo2());
         return response;
     }
 }

@@ -26,6 +26,7 @@ public class DataSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         seedUser(
                 "doctor@mediai.local",
+                "doctor",
                 "password123",
                 "Dr. Nguyen Minh",
                 UserRole.DOCTOR,
@@ -33,23 +34,27 @@ public class DataSeeder implements ApplicationRunner {
 
         seedUser(
                 "admin@mediai.local",
+                "admin",
                 "admin12345",
                 "System Admin",
                 UserRole.ADMIN,
                 "Administration");
     }
 
-    private void seedUser(String email, String rawPassword, String fullName, UserRole role, String department) {
+    private void seedUser(String email, String username, String rawPassword,
+            String fullName, UserRole role, String department) {
         if (userRepository.existsByEmailIgnoreCase(email)) {
             return;
         }
 
         var user = new User();
         user.setEmail(email);
+        user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setFullName(fullName);
         user.setRole(role);
         user.setDepartment(department);
+        user.setStatus("ACTIVE");
         userRepository.save(user);
     }
 }

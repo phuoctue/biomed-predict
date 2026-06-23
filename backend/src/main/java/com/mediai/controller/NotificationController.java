@@ -1,7 +1,5 @@
 package com.mediai.controller;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -82,19 +80,18 @@ public class NotificationController {
     }
 
     @PutMapping("/{id}/read")
-    public ApiResponse<NotificationResponse> markAsRead(@PathVariable UUID id) {
-        return ApiResponse.ok("Notification marked as read.",
-                notificationService.markAsRead(id));
+    public ApiResponse<NotificationResponse> markAsRead(@PathVariable Long id) {
+        return ApiResponse.ok("Notification marked as read.", notificationService.markAsRead(id));
     }
 
     @PutMapping("/{id}/archive")
-    public ApiResponse<String> markAsArchived(@PathVariable UUID id) {
+    public ApiResponse<String> markAsArchived(@PathVariable Long id) {
         notificationService.markAsArchived(id);
         return ApiResponse.ok("Notification archived successfully.", "archived");
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteNotification(@PathVariable UUID id) {
+    public ApiResponse<String> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);
         return ApiResponse.ok("Notification deleted successfully.", "deleted");
     }

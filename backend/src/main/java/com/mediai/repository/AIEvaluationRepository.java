@@ -12,13 +12,13 @@ import com.mediai.entity.AIEvaluation;
 
 public interface AIEvaluationRepository extends JpaRepository<AIEvaluation, Long>, JpaSpecificationExecutor<AIEvaluation> {
 
-    List<AIEvaluation> findByPatient_IdOrderByCreatedAtDesc(UUID patientId);
+    List<AIEvaluation> findByPatient_IdOrderByCreatedAtDesc(Long patientId);
 
-    List<AIEvaluation> findByPatient_IdAndDrug_IdOrderByCreatedAtDesc(UUID patientId, UUID drugId);
+    List<AIEvaluation> findByPatient_IdAndDrug_IdOrderByCreatedAtDesc(Long patientId, Long drugId);
 
-    List<AIEvaluation> findByDrug_IdOrderByCreatedAtDesc(UUID drugId);
+    List<AIEvaluation> findByDrug_IdOrderByCreatedAtDesc(Long drugId);
 
-    AIEvaluation findTopByPatient_IdOrderByCreatedAtDesc(UUID patientId);
+    AIEvaluation findTopByPatient_IdOrderByCreatedAtDesc(Long patientId);
 
     long countByRiskLevel(String riskLevel);
 

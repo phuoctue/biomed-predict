@@ -1,7 +1,5 @@
 package com.mediai.controller;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -32,7 +30,7 @@ public class BookmarkController {
 
     @PostMapping("/drugs/{drugId}")
     public ResponseEntity<ApiResponse<DrugSummaryResponse>> addBookmark(
-            @PathVariable UUID drugId,
+            @PathVariable Long drugId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Drug bookmarked successfully.",
@@ -44,20 +42,14 @@ public class BookmarkController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = bookmarkService.getBookmarks(principal.id(), pageable);
-        return PageResponse.ok(
-                "Bookmarks retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Bookmarks retrieved successfully.", page.getContent(),
+                page.getNumber(), page.getSize(), page.getTotalElements(),
+                page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/drugs/{drugId}/is-bookmarked")
     public ApiResponse<Boolean> isBookmarked(
-            @PathVariable UUID drugId,
+            @PathVariable Long drugId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ApiResponse.ok("Bookmark status retrieved.",
                 bookmarkService.isBookmarked(principal.id(), drugId));
@@ -65,7 +57,7 @@ public class BookmarkController {
 
     @DeleteMapping("/drugs/{drugId}")
     public ApiResponse<String> removeBookmark(
-            @PathVariable UUID drugId,
+            @PathVariable Long drugId,
             @AuthenticationPrincipal UserPrincipal principal) {
         bookmarkService.removeBookmark(principal.id(), drugId);
         return ApiResponse.ok("Bookmark removed successfully.", "removed");

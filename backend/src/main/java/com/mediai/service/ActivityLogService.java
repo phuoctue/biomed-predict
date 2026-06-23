@@ -15,7 +15,6 @@ import com.mediai.dto.auditlog.ActivityLogRequest;
 import com.mediai.dto.auditlog.ActivityLogResponse;
 import com.mediai.entity.ActivityLog;
 import com.mediai.entity.ActivityLog.ActionType;
-import com.mediai.entity.User;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.ActivityLogRepository;
 import com.mediai.repository.UserRepository;
@@ -53,40 +52,40 @@ public class ActivityLogService {
 
     @Transactional(readOnly = true)
     public Page<ActivityLogResponse> getActivityLogs(Pageable pageable) {
-        return activityLogRepository.findAll(pageable)
-                .map(this::toResponse);
+        return activityLogRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUser(UUID userId, Pageable pageable) {
-        return activityLogRepository.findByUserId(userId, pageable)
-                .map(this::toResponse);
+    public Page<ActivityLogResponse> getActivityLogsByUser(Long userId, Pageable pageable) {
+        return activityLogRepository.findByUser_Id(userId, pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByEntity(String entityType, UUID entityId, Pageable pageable) {
+    public Page<ActivityLogResponse> getActivityLogsByEntity(String entityType, UUID entityId,
+            Pageable pageable) {
         return activityLogRepository.findByEntityTypeAndEntityId(entityType, entityId, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<ActivityLogResponse> getActivityLogsByActionType(String actionType, Pageable pageable) {
-        return activityLogRepository.findByActionType(ActionType.valueOf(actionType.toUpperCase()), pageable)
+        return activityLogRepository
+                .findByActionType(ActionType.valueOf(actionType.toUpperCase()), pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUserAndActionType(UUID userId, String actionType,
+    public Page<ActivityLogResponse> getActivityLogsByUserAndActionType(Long userId, String actionType,
             Pageable pageable) {
-        return activityLogRepository.findByUserIdAndActionType(userId, ActionType.valueOf(actionType.toUpperCase()),
-                pageable)
+        return activityLogRepository
+                .findByUser_IdAndActionType(userId, ActionType.valueOf(actionType.toUpperCase()), pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUserAndEntity(UUID userId, String entityType,
+    public Page<ActivityLogResponse> getActivityLogsByUserAndEntity(Long userId, String entityType,
             Pageable pageable) {
-        return activityLogRepository.findByUserIdAndEntityType(userId, entityType, pageable)
+        return activityLogRepository.findByUser_IdAndEntityType(userId, entityType, pageable)
                 .map(this::toResponse);
     }
 
@@ -106,16 +105,11 @@ public class ActivityLogService {
 
     private String getClientIpAddress() {
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes == null) {
-                return "UNKNOWN";
-            }
-            HttpServletRequest request = attributes.getRequest();
-            String clientIp = request.getHeader("X-Forwarded-For");
-            if (clientIp == null || clientIp.isEmpty()) {
-                clientIp = request.getRemoteAddr();
-            }
-            return clientIp;
+            var attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs == null) return "UNKNOWN";
+            HttpServletRequest request = attrs.getRequest();
+            String ip = request.getHeader("X-Forwarded-For");
+            return (ip == null || ip.isEmpty()) ? request.getRemoteAddr() : ip;
         } catch (Exception e) {
             return "UNKNOWN";
         }
@@ -123,11 +117,9 @@ public class ActivityLogService {
 
     private String getUserAgent() {
         try {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes == null) {
-                return "UNKNOWN";
-            }
-            return attributes.getRequest().getHeader("User-Agent");
+            var attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs == null) return "UNKNOWN";
+            return attrs.getRequest().getHeader("User-Agent");
         } catch (Exception e) {
             return "UNKNOWN";
         }

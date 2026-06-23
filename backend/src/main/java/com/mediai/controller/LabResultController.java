@@ -27,29 +27,21 @@ public class LabResultController {
     public ResponseEntity<ApiResponse<LabResult>> createLabResult(
             @RequestBody CreateLabResultRequest request) {
         LabResult labResult = LabResult.builder()
-            .testCode(request.getTestCode())
-            .testName(request.getTestName())
-            .resultValue(request.getResultValue())
-            .unit(request.getUnit())
-            .referenceRange(request.getReferenceRange())
-            .build();
+                .testCode(request.getTestCode())
+                .testName(request.getTestName())
+                .resultValue(request.getResultValue())
+                .unit(request.getUnit())
+                .referenceRange(request.getReferenceRange())
+                .build();
 
         LabResult saved = labResultService.createLabResult(labResult);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.<LabResult>builder()
-                .success(true)
-                .message("Lab result recorded successfully")
-                .data(saved)
-                .build());
+                .body(ApiResponse.ok("Lab result recorded successfully.", saved));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<LabResult>> getLabResult(@PathVariable Long id) {
         LabResult labResult = labResultService.getLabResultById(id);
-        return ResponseEntity.ok(ApiResponse.<LabResult>builder()
-            .success(true)
-            .message("Lab result retrieved successfully")
-            .data(labResult)
-            .build());
+        return ResponseEntity.ok(ApiResponse.ok("Lab result retrieved successfully.", labResult));
     }
 }

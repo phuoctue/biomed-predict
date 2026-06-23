@@ -1,12 +1,11 @@
 package com.mediai.dto.user;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import com.mediai.entity.User;
 
 public record UserResponse(
-        UUID id,
+        Long id,
         String email,
         String fullName,
         String role,

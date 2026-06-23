@@ -1,12 +1,10 @@
 package com.mediai.auth.dto;
 
-import java.util.UUID;
-
 import com.mediai.entity.User;
 import com.mediai.entity.UserRole;
 
 public record AuthUserResponse(
-        UUID id,
+        Long id,
         String email,
         String fullName,
         UserRole role,

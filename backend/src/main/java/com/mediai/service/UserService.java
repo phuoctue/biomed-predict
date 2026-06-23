@@ -1,7 +1,5 @@
 package com.mediai.service;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -52,7 +50,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse getUser(UUID id) {
+    public UserResponse getUser(Long id) {
         return UserResponse.from(findUser(id));
     }
 
@@ -64,6 +62,7 @@ public class UserService {
 
         var user = new User();
         user.setEmail(request.email().trim().toLowerCase());
+        user.setUsername(request.email().trim().toLowerCase());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName());
         user.setRole(request.role());
@@ -73,7 +72,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateUser(UUID id, UpdateUserRequest request) {
+    public UserResponse updateUser(Long id, UpdateUserRequest request) {
         var user = findUser(id);
 
         user.setFullName(request.fullName());
@@ -84,7 +83,7 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(UUID id, UUID currentUserId) {
+    public void deleteUser(Long id, Long currentUserId) {
         if (id.equals(currentUserId)) {
             throw new IllegalArgumentException("Cannot delete your own account.");
         }
@@ -93,14 +92,14 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(UUID id, ChangePasswordRequest request) {
+    public void changePassword(Long id, ChangePasswordRequest request) {
         var user = findUser(id);
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
     }
 
     @Transactional
-    public UserResponse updateProfile(UUID id, UpdateProfileRequest request) {
+    public UserResponse updateProfile(Long id, UpdateProfileRequest request) {
         var user = findUser(id);
         if (request.fullName() != null && !request.fullName().isBlank()) {
             user.setFullName(request.fullName());
@@ -111,7 +110,7 @@ public class UserService {
         return UserResponse.from(userRepository.save(user));
     }
 
-    private User findUser(UUID id) {
+    private User findUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found."));
     }

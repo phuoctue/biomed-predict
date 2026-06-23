@@ -5,7 +5,15 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.mediai.dto.common.ApiResponse;
 import com.mediai.dto.medication.MedicationRequest;
@@ -26,7 +34,7 @@ public class MedicationController {
 
     @GetMapping
     public ApiResponse<List<MedicationResponse>> listMedications(
-            @RequestParam(required = false) UUID patientId) {
+            @RequestParam(required = false) Long patientId) {
         return ApiResponse.ok("Medications retrieved successfully.",
                 medicationService.listMedications(patientId));
     }
@@ -47,7 +55,8 @@ public class MedicationController {
 
     @PutMapping("/{id}")
     public ApiResponse<MedicationResponse> updateMedication(
-            @PathVariable UUID id, @Valid @RequestBody MedicationRequest request) {
+            @PathVariable UUID id,
+            @Valid @RequestBody MedicationRequest request) {
         return ApiResponse.ok("Medication updated successfully.",
                 medicationService.updateMedication(id, request));
     }

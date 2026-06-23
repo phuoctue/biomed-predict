@@ -30,7 +30,7 @@ public class MedicationService {
     }
 
     @Transactional(readOnly = true)
-    public List<MedicationResponse> listMedications(UUID patientId) {
+    public List<MedicationResponse> listMedications(Long patientId) {
         if (patientId != null) {
             return patientDrugRepository.findByPatient_Id(patientId).stream()
                     .map(MedicationResponse::from).toList();

@@ -1,12 +1,11 @@
 package com.mediai.dto.ingredient;
 
 import java.time.Instant;
-import java.util.UUID;
 
 import com.mediai.entity.Ingredient;
 
 public record IngredientResponse(
-        UUID id,
+        Long id,
         String code,
         String name,
         String description,
