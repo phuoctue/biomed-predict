@@ -1,1 +1,0 @@
-E:/Database/PostgreSQL/18/bin/postgres.exe "-D" "E:/WorkSpace/biomed-predict/biomed-predict/.tmp/pg-dev" "-p" "55432" "-h" "127.0.0.1"
