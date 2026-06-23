@@ -1,104 +1,95 @@
 from app.core.llm import build_prompt, call_llm
 from app.schemas.evaluation import EvaluationRequest, EvaluationResponse
-
-
-# Drug-specific knowledge base
-DRUG_WARNINGS = {
-    "Aspirin": [
-        "Check for bleeding disorders before prescription.",
-        "Monitor for gastrointestinal bleeding risk.",
-        "Avoid in patients with active peptic ulcer disease."
-    ],
-    "Omeprazole": [
-        "May increase risk of C. difficile infection with long-term use.",
-        "Monitor magnesium levels in long-term therapy.",
-        "Check for potential drug interactions with clopidogrel."
-    ],
-    "Warfarin": [
-        "Requires regular INR monitoring.",
-        "High risk of bleeding - avoid NSAIDs.",
-        "Multiple drug-drug interactions possible."
-    ],
-    "Metformin": [
-        "Check renal function before initiating therapy.",
-        "Risk of lactic acidosis in renal impairment.",
-        "Hold before contrast procedures."
-    ],
-    "Digoxin": [
-        "Narrow therapeutic window - monitor levels.",
-        "Check potassium and magnesium levels.",
-        "Adjust dose in renal impairment."
-    ]
-}
-
-DRUG_ALTERNATIVES = {
-    "Aspirin": [
-        "Consider Clopidogrel for antiplatelet therapy",
-        "Evaluate need for gastric protection with PPI"
-    ],
-    "Omeprazole": [
-        "Consider H2 blocker (Ranitidine) if appropriate",
-        "Evaluate step-down therapy after 8 weeks"
-    ],
-    "Warfarin": [
-        "Consider newer anticoagulants (DOACs) if eligible",
-        "Discuss risks/benefits with patient"
-    ],
-    "Metformin": [
-        "Consider SGLT2 inhibitors if contraindicated",
-        "Sulfonylureas as alternative for T2DM"
-    ],
-    "Digoxin": [
-        "Consider beta-blockers for rate control",
-        "Calcium channel blockers as alternative"
-    ]
-}
+import json
+import re
 
 
 async def evaluate_medication(payload: EvaluationRequest) -> EvaluationResponse:
-    prompt = build_prompt(payload.model_dump(), "evaluate medication suitability")
-    llm_text = await call_llm(prompt)
+    # Build detailed prompt for LLM
+    prompt = f"""You are an expert clinical pharmacist AI assistant. Analyze this medication for a patient and provide a structured evaluation.
 
-    # Get drug-specific warnings and alternatives
-    drug_name = payload.drug_name
-    warnings = DRUG_WARNINGS.get(drug_name, [
-        "Check renal function before final prescription.",
-        "Review potential drug-drug interactions with the full medication list."
-    ])
-    
-    alternatives = DRUG_ALTERNATIVES.get(drug_name, [
-        "Discuss a safer substitute with the formulary team",
-        "Verify dose adjustment options"
-    ])
+Patient Information:
+- Age: {payload.patient_age or 'Unknown'}
+- Diagnosis: {payload.diagnosis}
+- Allergies: {', '.join(payload.allergies) if payload.allergies else 'None'}
+- Current Medications: None listed
 
-    # Calculate risk based on patient factors
-    has_allergy = bool(payload.allergies)
-    patient_age = payload.patient_age or 0
-    
-    # Base score
-    score = 92 if not has_allergy else 68
-    
-    # Adjust for age (elderly patients)
-    if patient_age >= 65:
-        score -= 10
-    
-    # Adjust for specific drugs
-    if drug_name in ["Warfarin", "Digoxin"]:
-        score -= 15  # High-risk drugs
-    elif drug_name in ["Aspirin", "Metformin"]:
-        score -= 5
-    
-    # Ensure score is within 0-100
-    score = max(0, min(100, score))
-    
-    risk_level = "low" if score >= 85 else "moderate" if score >= 70 else "high"
+Medication to Evaluate:
+- Drug: {payload.drug_name}
+- Dosage: {payload.dosage}
 
-    return EvaluationResponse(
-        suitability_score=score,
-        risk_level=risk_level,
-        summary=f"{drug_name} was reviewed against the provided context. Score: {score}/100",
-        warnings=warnings,
-        alternatives=alternatives,
-        raw_explanation=llm_text
-    )
+Please provide:
+1. Suitability Score (0-100): How suitable is this drug for this patient?
+2. Risk Level: low, moderate, or high
+3. Summary: Brief clinical summary in Vietnamese (2-3 sentences)
+4. Warnings: List 3-5 specific clinical warnings for this drug-patient combination
+5. Alternatives: List 2-3 alternative medications or approaches
+
+Format your response as JSON:
+{{
+  "suitability_score": <number>,
+  "risk_level": "<low|moderate|high>",
+  "summary": "<vietnamese summary>",
+  "warnings": ["<warning 1>", "<warning 2>", ...],
+  "alternatives": ["<alternative 1>", "<alternative 2>", ...]
+}}
+
+Be specific to this patient's age, diagnosis, and allergies. Consider drug interactions, contraindications, and age-related factors."""
+
+    # Call LLM
+    llm_response = await call_llm(prompt)
+    
+    # Try to parse LLM JSON response
+    try:
+        # Extract JSON from response (handle markdown code blocks)
+        json_match = re.search(r'```json\s*(\{.*?\})\s*```', llm_response, re.DOTALL)
+        if json_match:
+            llm_data = json.loads(json_match.group(1))
+        else:
+            # Try direct JSON parse
+            json_match = re.search(r'\{.*\}', llm_response, re.DOTALL)
+            if json_match:
+                llm_data = json.loads(json_match.group(0))
+            else:
+                raise ValueError("No JSON found in LLM response")
+        
+        return EvaluationResponse(
+            suitability_score=llm_data.get("suitability_score", 70),
+            risk_level=llm_data.get("risk_level", "moderate"),
+            summary=llm_data.get("summary", f"{payload.drug_name} đã được đánh giá dựa trên hồ sơ bệnh nhân."),
+            warnings=llm_data.get("warnings", ["Theo dõi các tác dụng phụ", "Tương tác thuốc cần được xem xét"]),
+            alternatives=llm_data.get("alternatives", ["Tham khảo ý kiến chuyên gia", "Xem xét thuốc thay thế"]),
+            raw_explanation=llm_response
+        )
+    
+    except Exception as e:
+        # Fallback to rule-based if LLM parsing fails
+        print(f"LLM parsing failed: {e}")
+        print(f"LLM Response: {llm_response[:500]}")
+        
+        # Fallback logic
+        has_allergy = bool(payload.allergies)
+        patient_age = payload.patient_age or 0
+        
+        score = 92 if not has_allergy else 68
+        if patient_age >= 65:
+            score -= 10
+        
+        score = max(0, min(100, score))
+        risk_level = "low" if score >= 85 else "moderate" if score >= 70 else "high"
+        
+        return EvaluationResponse(
+            suitability_score=score,
+            risk_level=risk_level,
+            summary=f"{payload.drug_name} đã được đánh giá. Vui lòng xem xét thêm thông tin lâm sàng.",
+            warnings=[
+                "Kiểm tra chức năng thận trước khi kê đơn",
+                "Theo dõi tương tác thuốc với danh sách thuốc đầy đủ"
+            ],
+            alternatives=[
+                "Tham khảo ý kiến dược sĩ lâm sàng",
+                "Xem xét điều chỉnh liều lượng"
+            ],
+            raw_explanation=llm_response
+        )
 
