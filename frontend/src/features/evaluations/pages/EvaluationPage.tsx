@@ -1,55 +1,88 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { PatientInfo } from "@/components/evaluations/PatientInfo";
-import { DrugSelector } from "@/components/evaluations/DrugSelector";
+import { DrugSelector, DrugSelectorItem } from "@/components/evaluations/DrugSelector";
 import { ClinicalSummary } from "@/components/evaluations/ClinicalSummary";
 import { RiskAlert } from "@/components/evaluations/RiskAlert";
 import { ActionFooter } from "@/components/evaluations/ActionFooter";
 import { AIAnalysisStatus } from "@/components/evaluations/AIAnalysisStatus";
 import { usePatients } from "@/hooks/usePatients";
-import { useEvaluation } from "@/hooks/useEvaluation";
+import apiClient from "@/lib/api-client";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export const EvaluationPage = () => {
   const { patients, loading: loadingPatients } = usePatients();
 
-  const [selectedMrn, setSelectedMrn] = React.useState<string | null>(null);
+  const [selectedPatient, setSelectedPatient] = React.useState<any | null>(null);
+  const [selectedDrugs, setSelectedDrugs] = useState<DrugSelectorItem[]>([]);
+  const [evaluationResult, setEvaluationResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const patientOptions = useMemo(
     () =>
       patients.map((p) => ({
-        id: p.mrn,
+        id: p.id, // Use UUID instead of MRN
         name: p.fullName,
         summary: p.diagnosis || "Chưa có chẩn đoán",
       })),
     [patients]
   );
 
-  const selectedOption = patientOptions.find((p) => p.id === selectedMrn) || null;
+  const selectedOption = selectedPatient 
+    ? patientOptions.find((p) => p.id === selectedPatient.id) 
+    : null;
 
-  const { patient, interactions, drugs, loading: loadingEval, error } = useEvaluation(selectedMrn);
+  const handleSelectPatient = (patient: any) => {
+    setSelectedPatient(patient);
+    setEvaluationResult(null);
+    setError(null);
+  };
 
-  // Map drugs cho DrugSelector
-  const drugItems = useMemo(
-    () =>
-      drugs.map((d) => ({
-        id: String(d.id),
-        name: d.name,
-        dosage: d.dosage,
-      })),
-    [drugs]
-  );
+  const handleAddDrug = (drug: DrugSelectorItem) => {
+    if (!selectedDrugs.find(d => d.id === drug.id)) {
+      setSelectedDrugs([...selectedDrugs, drug]);
+    }
+  };
 
-  // Map interactions cho RiskAlert
-  const dangerAlerts = interactions.filter(
-    (i) => i.severity === "HIGH" || i.severity === "MEDIUM"
-  );
+  const handleRemoveDrug = (drugId: string) => {
+    setSelectedDrugs(selectedDrugs.filter(d => d.id !== drugId));
+  };
 
-  // Clinical summary data
-  const conditions = patient?.diagnosis
-    ? patient.diagnosis.split(/[,;\n]+/).map((s) => s.trim()).filter(Boolean)
-    : [];
+  const handleEvaluate = async () => {
+    if (!selectedPatient || selectedDrugs.length === 0) {
+      setError("Vui lòng chọn bệnh nhân và ít nhất một loại thuốc");
+      return;
+    }
 
-  const progress = loadingEval ? 40 : selectedMrn ? 100 : 0;
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Call AI evaluation for each drug
+      const evaluations = await Promise.all(
+        selectedDrugs.map(drug => 
+          apiClient.post("/ai/evaluate", {
+            patientId: selectedPatient.id,
+            drugId: drug.id,
+            dosage: drug.dosage || "100mg",
+            labs: {}
+          })
+        )
+      );
+
+      // Combine results
+      const results = evaluations.map(res => res.data?.content || res.data?.data);
+      setEvaluationResult(results);
+
+    } catch (err: any) {
+      console.error("Failed to evaluate:", err);
+      setError(err.response?.data?.message || "Không thể thực hiện đánh giá AI");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const progress = loading ? 50 : evaluationResult ? 100 : 0;
 
   return (
     <div className="p-8 bg-slate-50 min-h-screen max-w-7xl mx-auto">
@@ -79,9 +112,29 @@ export const EvaluationPage = () => {
           <PatientInfo
             patients={patientOptions}
             selectedPatient={selectedOption || { id: "", name: "Chọn bệnh nhân", summary: "Chưa chọn bệnh nhân nào" }}
-            onSelect={(p) => setSelectedMrn(p.id)}
+            onSelect={handleSelectPatient}
           />
-          <DrugSelector drugs={drugItems} />
+          <DrugSelector 
+            drugs={selectedDrugs}
+            onAdd={handleAddDrug}
+            onRemove={handleRemoveDrug}
+          />
+          
+          {/* Nút đánh giá */}
+          <button
+            onClick={handleEvaluate}
+            disabled={!selectedPatient || selectedDrugs.length === 0 || loading}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold rounded-xl transition-all shadow-sm disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang phân tích...
+              </span>
+            ) : (
+              "Lưu vào hồ sơ"
+            )}
+          </button>
         </div>
 
         {/* Cột phải */}
@@ -89,61 +142,66 @@ export const EvaluationPage = () => {
           <AIAnalysisStatus progress={progress} />
 
           {/* Clinical Summary */}
-          {!selectedMrn ? (
+          {!selectedPatient ? (
             <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-400">
               <p className="text-sm">
                 Vui lòng chọn một bệnh nhân để xem kết quả phân tích AI
               </p>
             </div>
-          ) : loadingEval ? (
+          ) : loading ? (
             <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-500">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-blue-600" />
               <p className="text-sm font-medium">Đang phân tích hồ sơ bệnh nhân...</p>
             </div>
-          ) : (
+          ) : evaluationResult ? (
             <>
-              <ClinicalSummary
-                conditions={conditions}
-                eGFR="90 mL/min (bình thường)"
-                aiLogic="Hệ thống AI phân tích dựa trên thông tin lâm sàng, tương tác thuốc và tiền sử bệnh nhân để đưa ra khuyến nghị phù hợp."
-                recommendation="Theo dõi định kỳ và đánh giá lại khi có thay đổi về thuốc hoặc tình trạng lâm sàng."
-              />
+              {evaluationResult.map((result: any, index: number) => (
+                <div key={index} className="space-y-4">
+                  <ClinicalSummary
+                    conditions={[result.drugName, result.dosage]}
+                    eGFR="90 mL/min (bình thường)"
+                    aiLogic={result.summary || "Đánh giá AI"}
+                    recommendation={result.alternatives?.join(", ") || "Theo dõi định kỳ"}
+                  />
 
-              {/* Risk Alerts */}
-              {dangerAlerts.length === 0 ? (
-                <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 text-emerald-700 text-sm font-medium text-center">
-                  ✅ Không phát hiện tương tác thuốc nguy hiểm
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {dangerAlerts.map((i) => (
+                  {/* Risk Alerts */}
+                  {result.riskLevel !== "low" && (
                     <RiskAlert
-                      key={i.id}
-                      type={i.severity === "HIGH" ? "danger" : "warning"}
-                      title={`${i.severity === "HIGH" ? "Tương tác Nguy hiểm" : "Tương tác Trung bình"}: ${i.drugPair}`}
-                      reason={i.description}
-                      recommendations={
-                        i.recommendation
-                          ? i.recommendation.split(/[,;\n]+/).map((s) => s.trim()).filter(Boolean)
-                          : ["Theo dõi chặt chẽ"]
-                      }
+                      type={result.riskLevel === "high" ? "danger" : "warning"}
+                      title={`Rủi ro ${result.riskLevel === "high" ? "Cao" : "Trung bình"}: ${result.drugName}`}
+                      reason={result.summary}
+                      recommendations={result.warnings || []}
                     />
-                  ))}
+                  )}
+
+                  {result.riskLevel === "low" && (
+                    <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-200 text-emerald-700 text-sm font-medium text-center">
+                      ✅ {result.drugName}: Không phát hiện rủi ro cao
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </>
+          ) : (
+            <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm text-center text-slate-400">
+              <p className="text-sm">
+                Chọn thuốc và nhấn "Lưu vào hồ sơ" để thực hiện đánh giá AI
+              </p>
+            </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="col-span-12 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500 font-medium">
-              Đánh giá được thực hiện bởi hệ thống AI hỗ trợ lâm sàng.
-            </p>
-            <ActionFooter />
+        {evaluationResult && (
+          <div className="col-span-12 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-500 font-medium">
+                Đánh giá được thực hiện bởi hệ thống AI hỗ trợ lâm sàng.
+              </p>
+              <ActionFooter />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

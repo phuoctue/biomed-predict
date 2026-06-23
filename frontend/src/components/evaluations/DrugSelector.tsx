@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, X, Search } from "lucide-react";
+import apiClient from "@/lib/api-client";
 
 export interface DrugSelectorItem {
   id: string;
@@ -9,11 +10,56 @@ export interface DrugSelectorItem {
 
 interface DrugSelectorProps {
   drugs: DrugSelectorItem[];
+  onAdd?: (drug: DrugSelectorItem) => void;
   onRemove?: (id: string) => void;
 }
 
-export const DrugSelector = ({ drugs, onRemove }: DrugSelectorProps) => {
+export const DrugSelector = ({ drugs, onAdd, onRemove }: DrugSelectorProps) => {
   const [input, setInput] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Search drugs from backend
+  useEffect(() => {
+    if (input.length < 2) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.get("/drugs", {
+          params: { search: input, page: 0, size: 10 }
+        });
+        const results = response.data?.content || [];
+        setSearchResults(results);
+        setShowDropdown(true);
+      } catch (error) {
+        console.error("Failed to search drugs:", error);
+        setSearchResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [input]);
+
+  const handleSelectDrug = (drug: any) => {
+    if (onAdd) {
+      onAdd({
+        id: drug.id,
+        name: drug.name,
+        dosage: drug.strength || drug.recommendedDose || ""
+      });
+    }
+    setInput("");
+    setShowDropdown(false);
+    setSearchResults([]);
+  };
 
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
@@ -21,27 +67,46 @@ export const DrugSelector = ({ drugs, onRemove }: DrugSelectorProps) => {
         Danh sách thuốc hiện tại
       </h3>
 
-      {/* Input thêm thuốc */}
+      {/* Input thêm thuốc với search */}
       <div className="relative mb-4">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          className="w-full pl-4 pr-10 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none text-sm"
-          placeholder="Thêm tên thuốc..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              setInput("");
-            }
-          }}
+          className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-100 outline-none text-sm"
+          placeholder="Tìm và thêm thuốc..."
         />
-        <Plus
-          className="absolute right-3 top-3 text-slate-400 cursor-pointer hover:text-blue-600"
+        <Search
+          className="absolute left-3 top-3 text-slate-400"
           size={20}
         />
+
+        {/* Dropdown search results */}
+        {showDropdown && searchResults.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+            {searchResults.map((drug) => (
+              <div
+                key={drug.id}
+                onClick={() => handleSelectDrug(drug)}
+                className="p-3 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0"
+              >
+                <p className="font-bold text-slate-800 text-sm">{drug.name}</p>
+                <p className="text-xs text-slate-500">
+                  {drug.genericName && `${drug.genericName} • `}
+                  {drug.strength || drug.recommendedDose || ""}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showDropdown && searchResults.length === 0 && !loading && input.length >= 2 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-4 text-center text-slate-400 text-sm">
+            Không tìm thấy thuốc phù hợp
+          </div>
+        )}
       </div>
 
-      {/* Danh sách thuốc */}
+      {/* Danh sách thuốc đã chọn */}
       <div className="flex flex-wrap gap-2">
         {drugs.length === 0 ? (
           <span className="text-xs text-slate-400 italic">
