@@ -1,130 +1,225 @@
-# MediAI
+# MediAI — Hệ thống hỗ trợ lâm sàng thông minh (CDSS)
 
-Monorepo base for a medical AI platform focused on drugs, diseases, patient context, and explainable evaluation.
+## Kiến trúc
 
-## Structure
-
-```txt
-medi-ai/
-├── frontend/          # React + Vite + TypeScript
-├── backend/           # Java 21 + Spring Boot 3 base
-├── ai-service/        # Python 3.11+ + FastAPI
-├── docker-compose.yml
-├── .env.example
-├── README.md
-└── .gitignore
+```
+biomed-predict/
+├── backend/        Java 21 + Spring Boot 3.4  → :8081/api
+├── ai-service/     Python 3.10 + FastAPI       → :8000
+└── frontend/       React 18 + Vite + Tailwind  → :5173
 ```
 
-## What is already in place
+Database: **Supabase PostgreSQL** (đã có sẵn, không cần cài đặt)
 
-- `frontend/` includes auth, protected routes, shell layout, sidebar, header, theme switch, axios client, and starter pages.
-- `backend/` includes Spring Boot base structure, `pom.xml`, `application.yml`, `Dockerfile`, main class, and starter schema SQL.
-- `ai-service/` includes FastAPI, `/evaluate`, `/explain`, environment-driven LLM config, and Docker support.
-- `docker-compose.yml` runs `postgres`, `backend`, `ai-service`, and `frontend`.
+---
 
-## Setup
+## Yêu cầu cài đặt
 
-1. Copy env
+| Công cụ | Phiên bản | Tải về |
+|---------|-----------|--------|
+| JDK | **21** (không dùng JDK 22+) | https://www.oracle.com/java/technologies/downloads/#java21 |
+| Maven | 3.8+ | https://maven.apache.org/download.cgi |
+| Node.js | 18+ | https://nodejs.org |
+| Python | **3.10 – 3.12** (không dùng 3.13+) | https://www.python.org/downloads/ |
+
+> ⚠️ **Quan trọng:** Dự án yêu cầu **JDK 21** vì phụ thuộc Lombok + MapStruct không tương thích JDK 22+.
+> Nếu máy đang dùng JDK mới hơn, xem bước cấu hình JAVA_HOME bên dưới.
+
+---
+
+## Hướng dẫn chạy
+
+### Bước 1 — Clone dự án
 
 ```bash
-copy .env.example .env
+git clone https://github.com/phuoctue/biomed-predict.git
+cd biomed-predict
+git checkout feature/fix
 ```
 
-2. Install frontend deps
+---
+
+### Bước 2 — Tạo file `.env`
+
+Copy file mẫu và điền thông tin:
+
+```bash
+cp .env.example .env
+```
+
+Mở `.env` và cập nhật các giá trị sau:
+
+```env
+# Database — Supabase (dùng chung, không cần thay đổi)
+DATABASE_URL=jdbc:postgresql://db.hszcipdxyhednqknunpa.supabase.co:5432/postgres?sslmode=require
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=biomed-predict123
+
+# Backend chạy port 8081
+BACKEND_PORT=8081
+VITE_API_BASE_URL=http://localhost:8081/api
+
+# AI Service
+AI_SERVICE_URL=http://localhost:8000
+VITE_AI_BASE_URL=http://localhost:8000
+
+# JWT (giữ nguyên hoặc đổi secret cho production)
+JWT_ACCESS_SECRET=change_me_access_secret
+JWT_REFRESH_SECRET=change_me_refresh_secret
+
+# LLM — tuỳ chọn, bỏ trống nếu không có API key
+LLM_PROVIDER=openai
+LLM_API_KEY=
+LLM_MODEL=gpt-4o-mini
+```
+
+> Nếu không có LLM API key, AI service vẫn chạy nhưng trả về fallback response thay vì gọi GPT.
+
+---
+
+### Bước 3 — Chạy Backend (Spring Boot)
+
+**Windows:**
+```cmd
+# Cách 1 — Dùng script có sẵn (khuyên dùng)
+run-backend.bat
+
+# Cách 2 — Thủ công (nếu JDK 21 là default)
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
+```
+
+**macOS / Linux:**
+```bash
+export JAVA_HOME=/path/to/jdk-21
+export PATH=$JAVA_HOME/bin:$PATH
+
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
+```
+
+**Kiểm tra:** Truy cập `http://localhost:8081/api/health` → `{"status":"ok","service":"backend"}`
+
+> **Nếu máy có nhiều JDK:** Cần đặt JAVA_HOME trỏ đúng JDK 21 trước khi chạy Maven.
+> Windows: `set JAVA_HOME=C:\Program Files\Java\jdk-21`
+
+---
+
+### Bước 4 — Chạy AI Service (FastAPI)
+
+**Tạo virtual environment và cài packages:**
+```bash
+cd ai-service
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+**Chạy server:**
+```bash
+# Windows — dùng script có sẵn
+cd ..
+run-ai-service.bat
+
+# Hoặc thủ công
+cd ai-service
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Kiểm tra:** Truy cập `http://localhost:8000/health` → `{"status":"ok","service":"ai-service"}`
+
+---
+
+### Bước 5 — Chạy Frontend (React + Vite)
 
 ```bash
 cd frontend
 npm install
-```
-
-3. Run the frontend locally
-
-```bash
 npm run dev
 ```
 
-4. Run the AI service locally
+**Kiểm tra:** Truy cập `http://localhost:5173`
+
+---
+
+## Tài khoản test
+
+| Vai trò | Email | Mật khẩu |
+|---------|-------|----------|
+| **Bác sĩ** | `doctor@mediai.local` | `password123` |
+| **Quản trị** | `admin@mediai.local` | `admin12345` |
+| Bác sĩ 2 | `bs.nguyenvana@mediai.local` | `password123` |
+| Dược sĩ | `ds.levanc@mediai.local` | `password123` |
+
+---
+
+## Dữ liệu test có sẵn trong DB
+
+- **25 bệnh nhân** với hồ sơ lâm sàng đầy đủ
+- **52 loại thuốc** (Metformin, Warfarin, Digoxin, Aspirin...)
+- **15 đánh giá AI** với các mức rủi ro khác nhau
+- **18 activity logs** (nhật ký hệ thống)
+
+---
+
+## Cấu trúc URL
+
+| Service | URL | Ghi chú |
+|---------|-----|---------|
+| Frontend | http://localhost:5173 | Giao diện chính |
+| Backend API | http://localhost:8081/api | REST API |
+| AI Service | http://localhost:8000 | FastAPI |
+| API Docs | http://localhost:8081/swagger-ui.html | Swagger UI |
+| AI Docs | http://localhost:8000/docs | FastAPI Docs |
+
+---
+
+## Cấu trúc file cấu hình quan trọng
+
+```
+backend/src/main/resources/
+├── application.yml            # Cấu hình chính (đọc từ env vars)
+└── application-local.yml      # Override cho local dev (Supabase DB)
+
+ai-service/
+├── .env                       # Tạo từ .env.example
+└── app/core/config.py         # Cấu hình AI service
+
+frontend/
+└── .env (hoặc dùng VITE_ vars từ .env gốc)
+```
+
+---
+
+## Chạy bằng Docker (tuỳ chọn)
 
 ```bash
-cd ../ai-service
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Tạo .env trước, sau đó:
+docker-compose up --build
 ```
 
-5. Run the backend locally
+> Lưu ý: docker-compose dùng PostgreSQL local. Để dùng Supabase, cần cập nhật `DATABASE_URL` trong `.env`.
 
-```bash
-cd ../backend
-mvn spring-boot:run
-```
+---
 
-6. Start everything with Docker
+## Troubleshooting
 
-```bash
-docker compose up --build
-```
+**❌ "Cannot find symbol" hoặc compile lỗi với Java**
+→ Kiểm tra `java -version`, đảm bảo là **21.x**, đặt lại `JAVA_HOME`.
 
-## Supabase PostgreSQL
+**❌ "pydantic-core build failed" khi pip install**
+→ Python 3.13+ chưa có prebuilt wheel. Dùng Python **3.10, 3.11, hoặc 3.12**.
 
-For shared team data and easier deployment, point the backend to a Supabase PostgreSQL database.
+**❌ Backend lỗi "password authentication failed"**
+→ Kiểm tra file `application-local.yml` có đúng connection string Supabase chưa.
 
-1. Create a Supabase project.
-2. Copy the PostgreSQL connection details from the Supabase dashboard.
-3. Set these environment variables for the backend:
+**❌ Frontend hiện "Cannot read properties of undefined"**
+→ Đảm bảo `VITE_API_BASE_URL=http://localhost:8081/api` trong `.env`.
 
-```bash
-DATABASE_URL=jdbc:postgresql://db.<project-ref>.supabase.co:5432/postgres?sslmode=require
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<your_supabase_db_password>
-```
-
-4. Keep the backend `schema.sql` in place for local bootstrap, or switch to a migration tool later if you want stricter deployment control.
-
-Recommended pool settings for cloud Postgres:
-
-```bash
-DB_POOL_MAX_SIZE=5
-DB_POOL_MIN_IDLE=1
-DB_POOL_CONNECTION_TIMEOUT_MS=30000
-```
-
-## One-command local start
-
-Run this from the repository root on Windows PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\start-dev.ps1
-```
-
-The script will:
-
-- read existing env values from `.env` if present
-- prompt for Supabase connection details if needed
-- create the Python virtual environment for `ai-service` if missing
-- install Python dependencies
-- start the AI service and backend in the background
-
-## Docker Compose
-
-- `postgres` on `${POSTGRES_PORT:-5432}`
-- `backend` on `${BACKEND_PORT:-8080}`
-- `ai-service` on `${AI_SERVICE_PORT:-8000}`
-- `frontend` on `${FRONTEND_PORT:-5173}`
-- Frontend and AI service are mounted for live reload
-
-## Initial schema
-
-Core tables are defined in `backend/src/main/resources/db/schema.sql`:
-
-- `users`
-- `patients`
-- `drugs`
-- `evaluations`
-
-## API hints
-
-- Frontend expects `POST /api/auth/login` from the Java backend.
-- AI service exposes `POST /api/v1/evaluate` and `POST /api/v1/explain`.
-- Backend base exposes `GET /api/health`.
+**❌ Port 8081 đã bị dùng**
+→ `netstat -ano | findstr :8081` (Windows) để tìm PID, sau đó `taskkill /PID <pid> /F`.
