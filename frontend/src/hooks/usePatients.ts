@@ -27,7 +27,7 @@ export const usePatients = () => {
       });
 
       if (response.data && response.data.success) {
-        setPatients(response.data.data || []);
+        setPatients(response.data.content || []); // Backend uses 'content' not 'data'
       }
     } catch (err) {
       console.error("Failed to fetch patients:", err);
