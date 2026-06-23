@@ -21,9 +21,10 @@ import lombok.Setter;
 @Builder
 public class AIWarning extends BaseEntity {
 
+    // Points to ai_evaluations table (V3/V4 migration) via LegacyAIEvaluation entity
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "evaluation_id", nullable = false)
-    private AIEvaluation evaluation;
+    private LegacyAIEvaluation evaluation;
 
     @Column(name = "warning_type", length = 50)
     private String warningType;

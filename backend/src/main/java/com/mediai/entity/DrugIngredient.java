@@ -19,7 +19,7 @@ public class DrugIngredient extends BaseEntity {
     @JoinColumn(name = "ingredient_id", nullable = false)
     private Ingredient ingredient;
 
-    @Column(length = 255)
+    @Column(length = 100)
     private String concentration;
 
     public Drug getDrug() {
