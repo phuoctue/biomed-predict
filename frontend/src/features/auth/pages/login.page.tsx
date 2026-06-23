@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/auth.store';
+import { loginApi } from '../api/auth.api';
+import { routePaths } from '../../../app/routes/route-paths';
 
 // Đường dẫn chính xác 3 cấp thư mục để từ auth/pages đi ra src/components
 import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
@@ -8,31 +11,30 @@ import { LoginInput } from '../../../components/layout/login-input';
 
 export function LoginPage() {
   const [role, setRole] = useState<RoleType>('doctor');
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        console.log('Login success:', result.data);
-      } else {
-        alert(result.message || 'Đăng nhập thất bại');
-      }
-    } catch (error) {
-      console.error('Lỗi kết nối API:', error);
+      const result = await loginApi({ email, password });
+      setAuth({ accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user });
+      navigate(routePaths.dashboard, { replace: true });
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -82,14 +84,21 @@ export function LoginPage() {
           {/* Form Nhập liệu */}
           <form onSubmit={handleSubmit} className="w-full space-y-4">
             
-            {/* Input Tên đăng nhập */}
+            {/* Thông báo lỗi */}
+            {error && (
+              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            {/* Input Email */}
             <LoginInput
-              label="Tên đăng nhập / Số hồ sơ"
-              type="text"
+              label="Email"
+              type="email"
               required
-              placeholder="username@medeval.vn"
-              value={username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+              placeholder="doctor@mediai.local"
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               icon={<Mail className="h-4 w-4" />}
             />
 

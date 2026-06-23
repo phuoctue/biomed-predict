@@ -29,16 +29,16 @@ public class PatientEvaluationController {
     }
 
     /**
-     * Get latest evaluation summary for a patient, identified by MRN.
-     * patientId parameter is actually the MRN (medical record number).
+     * Get latest evaluation summary for a patient, identified by patient_code (MRN).
+     * patientId parameter is the patient_code value from V1 migration.
      */
     @GetMapping("/latest")
     public ApiResponse<PatientEvaluationSummaryDTO> getLatestEvaluation(@RequestParam String patientId) {
-        // Query Patient by MRN (patientId param = MRN)
+        // Query Patient by patient_code (V1 migration column name)
         String patientSql =
             "SELECT id, full_name, EXTRACT(YEAR FROM age(date_of_birth))::int AS age, " +
-            "sex, allergies, diagnosis, updated_at " +
-            "FROM patients WHERE mrn = ? AND deleted = false";
+            "gender, NULL AS allergies, NULL AS diagnosis, updated_at " +
+            "FROM patients WHERE patient_code = ? AND deleted = false";
 
         List<PatientInfoDTO> patients = jdbcTemplate.query(patientSql, this::mapPatient, patientId);
 
@@ -50,7 +50,7 @@ public class PatientEvaluationController {
         // mapPatient stores the DB id (Long as string) in patientDbId field via a
         // temporary holder — we re-query using id from the first row
         String rawDbId = jdbcTemplate.queryForObject(
-                "SELECT id::text FROM patients WHERE mrn = ? AND deleted = false",
+                "SELECT id::text FROM patients WHERE patient_code = ? AND deleted = false",
                 String.class, patientId);
 
         if (rawDbId == null) {
@@ -61,24 +61,25 @@ public class PatientEvaluationController {
         Long dbPatientId = Long.parseLong(rawDbId);
 
         String drugSql =
-            "SELECT pd.id::text AS id, d.name, d.generic_name, pd.dosage, pd.frequency, " +
+            "SELECT pd.id::text AS id, d.generic_name AS name, d.brand_name AS generic_name, " +
+            "pd.dosage, pd.frequency, " +
             "pd.indication, pd.status, pd.status_text " +
             "FROM patient_drugs pd " +
             "JOIN drugs d ON pd.drug_id = d.id " +
-            "WHERE pd.patient_id = ?";
+            "WHERE pd.patient_id = ? AND pd.deleted = false";
         List<PrescribedDrugDTO> drugs = jdbcTemplate.query(drugSql, this::mapDrug, dbPatientId);
 
         String interactionSql =
             "SELECT di.id::text AS id, " +
-            "d1.name || ' + ' || d2.name AS drug_pair, " +
+            "d1.generic_name || ' + ' || d2.generic_name AS drug_pair, " +
             "di.severity, di.description, 'Risk alert' AS risk_alert, di.recommendation " +
             "FROM drug_interactions di " +
-            "JOIN drugs d1 ON di.source_drug_id = d1.id " +
-            "JOIN drugs d2 ON di.target_drug_id = d2.id " +
-            "WHERE di.source_drug_id IN " +
-            "  (SELECT drug_id FROM patient_drugs WHERE patient_id = ?) " +
-            "AND di.target_drug_id IN " +
-            "  (SELECT drug_id FROM patient_drugs WHERE patient_id = ?)";
+            "JOIN drugs d1 ON di.drug_a_id = d1.id " +
+            "JOIN drugs d2 ON di.drug_b_id = d2.id " +
+            "WHERE di.drug_a_id IN " +
+            "  (SELECT drug_id FROM patient_drugs pd WHERE pd.patient_id = ? AND pd.deleted = false) " +
+            "AND di.drug_b_id IN " +
+            "  (SELECT drug_id FROM patient_drugs pd WHERE pd.patient_id = ? AND pd.deleted = false)";
         List<InteractionDTO> interactions = jdbcTemplate.query(
                 interactionSql, this::mapInteraction, dbPatientId, dbPatientId);
 
@@ -108,8 +109,8 @@ public class PatientEvaluationController {
         return new PatientInfoDTO(
                 rs.getString("full_name"),
                 rs.getInt("age"),
-                rs.getString("sex"),
-                rs.getString("id"),   // temporary: DB Long id as string
+                rs.getString("gender"),   // V1 migration uses `gender` column
+                rs.getString("id"),       // temporary: DB Long id as string
                 rs.getString("allergies"),
                 rs.getString("diagnosis"),
                 evaluatedAt);

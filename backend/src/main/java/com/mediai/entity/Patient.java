@@ -20,13 +20,15 @@ import lombok.Setter;
 @Builder
 public class Patient extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 20)
+    // V1 migration uses `patient_code` as the unique patient identifier (MRN)
+    @Column(name = "patient_code", nullable = false, unique = true, length = 20)
     private String mrn;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(nullable = false, length = 20)
+    // V1 migration uses `gender` column name (nullable)
+    @Column(name = "gender", length = 20)
     private String sex;
 
     @Column(name = "date_of_birth")

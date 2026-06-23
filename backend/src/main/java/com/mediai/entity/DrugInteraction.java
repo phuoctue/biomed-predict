@@ -11,12 +11,13 @@ import jakarta.persistence.Table;
 @Table(name = "drug_interactions")
 public class DrugInteraction extends BaseEntity {
 
+    // V5 migration uses `drug_a_id` / `drug_b_id`
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_drug_id", nullable = false)
+    @JoinColumn(name = "drug_a_id", nullable = false)
     private Drug sourceDrug;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_drug_id", nullable = false)
+    @JoinColumn(name = "drug_b_id", nullable = false)
     private Drug targetDrug;
 
     @Column(nullable = false, length = 50)

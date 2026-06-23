@@ -12,10 +12,11 @@ import jakarta.persistence.Table;
 @Table(name = "ingredients")
 public class Ingredient extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 64)
+    // V2 migration uses `ingredient_code` column name
+    @Column(name = "ingredient_code", nullable = false, unique = true, length = 50)
     private String code;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, length = 200)
     private String name;
 
     @Column(columnDefinition = "text")

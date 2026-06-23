@@ -16,31 +16,35 @@ import lombok.Setter;
 @Setter
 public class Drug extends BaseEntity {
 
-    @Column(nullable = false, unique = true, length = 64)
+    // Maps to `drug_code` column in V2 migration
+    @Column(name = "drug_code", nullable = false, unique = true, length = 30)
     private String code;
 
-    @Column(nullable = false, length = 255)
+    // V2 migration uses `generic_name` as the primary drug name column
+    @Column(name = "generic_name", nullable = false, length = 200)
     private String name;
 
-    @Column(name = "generic_name", length = 255)
-    private String genericName;
+    // V2 migration also has a separate `brand_name` column
+    @Column(name = "brand_name", length = 200)
+    private String brandName;
 
-    @Column(name = "drug_group", length = 255)
+    @Column(name = "drug_group", length = 100)
     private String drugGroup;
 
-    @Column(name = "dosage_form", length = 255)
+    @Column(name = "dosage_form", length = 50)
     private String dosageForm;
 
-    @Column(length = 255)
+    @Column(length = 50)
     private String strength;
 
-    @Column(length = 50)
+    @Column(length = 30)
     private String unit;
 
-    @Column(length = 255)
+    @Column(length = 200)
     private String manufacturer;
 
-    @Column(name = "usage_instructions", columnDefinition = "text")
+    // V2 migration uses `instruction` (not `usage_instructions`)
+    @Column(name = "instruction", columnDefinition = "text")
     private String usageInstructions;
 
     @Column(name = "recommended_dose", columnDefinition = "text")
@@ -52,7 +56,7 @@ public class Drug extends BaseEntity {
     @Column(name = "storage_condition", columnDefinition = "text")
     private String storageCondition;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 30)
     private String status = "ACTIVE";
 
     @OneToMany(mappedBy = "drug")
