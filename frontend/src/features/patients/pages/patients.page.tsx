@@ -60,7 +60,7 @@ export const PatientsPage = () => {
       });
 
       if (response.data && response.data.success) {
-        setPatients(response.data.data || []);
+        setPatients(response.data.content || []);
         setTotalPages(response.data.totalPages || 1);
         setTotalElements(response.data.totalElements || 0);
       }

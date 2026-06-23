@@ -1,13 +1,13 @@
 server:
-  port: ${BACKEND_PORT:8080}
+  port: ${BACKEND_PORT:8081}
 
 spring:
   application:
     name: mediai-backend
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/mediai_db}
-    username: ${POSTGRES_USER:mediai}
-    password: ${POSTGRES_PASSWORD:mediai123}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:biomed-predict123}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: ${DB_POOL_MAX_SIZE:5}

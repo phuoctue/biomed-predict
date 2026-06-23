@@ -25,18 +25,21 @@ export const UserTable = () => {
 
   const fetchUsers = () => {
     setLoading(true);
-    apiClient.get("/users?page=0&size=20&sort=createdAt,desc")
+    apiClient.get("/users", { params: { page: 0, size: 20, sort: "createdAt,desc" } })
       .then((res) => {
-        const items: any[] = res.data.content ?? res.data.data ?? [];
+        const items: any[] = res.data.content ?? [];
         setUsers(items.map((u) => ({
           id: String(u.id),
-          fullName: u.fullName ?? u.full_name ?? "—",
+          fullName: u.fullName ?? "—",
           email: u.email ?? "—",
           role: u.role ?? "MEDICAL_STAFF",
           department: u.department ?? "",
         })));
       })
-      .catch(() => setUsers([]))
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+        setUsers([]);
+      })
       .finally(() => setLoading(false));
   };
 

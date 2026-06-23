@@ -1,5 +1,16 @@
 # MediAI — Hệ thống hỗ trợ lâm sàng thông minh (CDSS)
 
+## ✅ Trạng thái dự án
+
+| Thành phần | Trạng thái | URL | Ghi chú |
+|------------|-----------|-----|---------|
+| **Backend** | ✅ Đang chạy | http://localhost:8081/api | Spring Boot + PostgreSQL |
+| **AI Service** | ✅ Đang chạy | http://localhost:8000 | FastAPI + LLM |
+| **Frontend** | ⏸️ Chưa chạy | http://localhost:5173 | React + Vite |
+| **Database** | ✅ Supabase | PostgreSQL 17.6 | Cloud database |
+
+---
+
 ## Kiến trúc
 
 ```
@@ -27,29 +38,24 @@ Database: **Supabase PostgreSQL** (đã có sẵn, không cần cài đặt)
 
 ---
 
-## Hướng dẫn chạy
+## Hướng dẫn chạy nhanh
 
 ### Bước 1 — Clone dự án
 
 ```bash
 git clone https://github.com/phuoctue/biomed-predict.git
 cd biomed-predict
-git checkout feature/fix
 ```
 
 ---
 
 ### Bước 2 — Tạo file `.env`
 
-Copy file mẫu và điền thông tin:
+File `.env` đã có sẵn với cấu hình Supabase. Không cần thay đổi gì!
+
+Nếu cần xem lại hoặc customize:
 
 ```bash
-cp .env.example .env
-```
-
-Mở `.env` và cập nhật các giá trị sau:
-
-```env
 # Database — Supabase (dùng chung, không cần thay đổi)
 DATABASE_URL=jdbc:postgresql://db.hszcipdxyhednqknunpa.supabase.co:5432/postgres?sslmode=require
 POSTGRES_USER=postgres
@@ -73,41 +79,50 @@ LLM_API_KEY=
 LLM_MODEL=gpt-4o-mini
 ```
 
-> Nếu không có LLM API key, AI service vẫn chạy nhưng trả về fallback response thay vì gọi GPT.
-
 ---
 
 ### Bước 3 — Chạy Backend (Spring Boot)
 
-**Windows:**
+**Windows — Cách nhanh nhất:**
 ```cmd
-# Cách 1 — Dùng script có sẵn (khuyên dùng)
 run-backend.bat
+```
 
-# Cách 2 — Thủ công (nếu JDK 21 là default)
+**Hoặc thủ công:**
+```cmd
 cd backend
+set JAVA_HOME=C:\Program Files\Java\jdk-21
+set PATH=%JAVA_HOME%\bin;%PATH%
 mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
 ```
 
 **macOS / Linux:**
 ```bash
-export JAVA_HOME=/path/to/jdk-21
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
 export PATH=$JAVA_HOME/bin:$PATH
 
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
 ```
 
-**Kiểm tra:** Truy cập `http://localhost:8081/api/health` → `{"status":"ok","service":"backend"}`
+**Kiểm tra:** Backend khởi động thành công khi thấy:
+```
+Started MediAiApplication in X seconds
+Tomcat started on port 8081
+```
 
-> **Nếu máy có nhiều JDK:** Cần đặt JAVA_HOME trỏ đúng JDK 21 trước khi chạy Maven.
-> Windows: `set JAVA_HOME=C:\Program Files\Java\jdk-21`
+Test API:
+```bash
+curl -X POST http://localhost:8081/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"doctor@mediai.local","password":"password123"}'
+```
 
 ---
 
 ### Bước 4 — Chạy AI Service (FastAPI)
 
-**Tạo virtual environment và cài packages:**
+**Lần đầu tiên - Tạo virtual environment:**
 ```bash
 cd ai-service
 python -m venv .venv
@@ -120,18 +135,29 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Chạy server:**
-```bash
-# Windows — dùng script có sẵn
-cd ..
-run-ai-service.bat
+**Lần sau - Chạy nhanh:**
 
-# Hoặc thủ công
+Windows:
+```cmd
+run-ai-service.bat
+```
+
+Manual:
+```bash
 cd ai-service
+# Windows
+.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
+
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-**Kiểm tra:** Truy cập `http://localhost:8000/health` → `{"status":"ok","service":"ai-service"}`
+**Kiểm tra:**
+```bash
+curl http://localhost:8000/health
+# Response: {"status":"ok","service":"ai-service"}
+```
 
 ---
 
@@ -147,39 +173,41 @@ npm run dev
 
 ---
 
-## Tài khoản test
+## 👤 Tài khoản test
 
-| Vai trò | Email | Mật khẩu |
-|---------|-------|----------|
-| **Bác sĩ** | `doctor@mediai.local` | `password123` |
-| **Quản trị** | `admin@mediai.local` | `admin12345` |
-| Bác sĩ 2 | `bs.nguyenvana@mediai.local` | `password123` |
-| Dược sĩ | `ds.levanc@mediai.local` | `password123` |
-
----
-
-## Dữ liệu test có sẵn trong DB
-
-- **25 bệnh nhân** với hồ sơ lâm sàng đầy đủ
-- **52 loại thuốc** (Metformin, Warfarin, Digoxin, Aspirin...)
-- **15 đánh giá AI** với các mức rủi ro khác nhau
-- **18 activity logs** (nhật ký hệ thống)
+| Vai trò | Email | Mật khẩu | Quyền |
+|---------|-------|----------|-------|
+| **👨‍⚕️ Bác sĩ** | `doctor@mediai.local` | `password123` | Xem bệnh nhân, kê đơn, đánh giá AI |
+| **🔧 Quản trị** | `admin@mediai.local` | `admin12345` | Quản lý toàn hệ thống |
+| Bác sĩ 2 | `bs.nguyenvana@mediai.local` | `password123` | Xem bệnh nhân, kê đơn |
+| Dược sĩ | `ds.levanc@mediai.local` | `password123` | Xác minh đơn thuốc |
 
 ---
 
-## Cấu trúc URL
+## 📊 Dữ liệu test có sẵn trong DB
 
-| Service | URL | Ghi chú |
-|---------|-----|---------|
-| Frontend | http://localhost:5173 | Giao diện chính |
-| Backend API | http://localhost:8081/api | REST API |
-| AI Service | http://localhost:8000 | FastAPI |
-| API Docs | http://localhost:8081/swagger-ui.html | Swagger UI |
-| AI Docs | http://localhost:8000/docs | FastAPI Docs |
+Database Supabase đã được populate với dữ liệu đầy đủ:
+
+- **25 bệnh nhân** với hồ sơ lâm sàng chi tiết (tiền sử, bệnh mãn tính, dị ứng...)
+- **52 loại thuốc** (Metformin, Warfarin, Digoxin, Aspirin, Lisinopril...)
+- **15 đơn thuốc** đã được kê với đánh giá rủi ro AI
+- **18 activity logs** (nhật ký hoạt động hệ thống)
+- **4 người dùng** với các vai trò khác nhau (Doctor, Admin, Pharmacist)
 
 ---
 
-## Cấu trúc file cấu hình quan trọng
+## 🌐 Cấu trúc URL
+
+| Service | URL | Docs | Ghi chú |
+|---------|-----|------|---------|
+| Frontend | http://localhost:5173 | - | React UI |
+| Backend API | http://localhost:8081/api | [Swagger](http://localhost:8081/swagger-ui.html) | REST API |
+| AI Service | http://localhost:8000 | [FastAPI Docs](http://localhost:8000/docs) | LLM Integration |
+| Actuator | http://localhost:8081/actuator | - | Health monitoring |
+
+---
+
+## 📁 Cấu trúc file cấu hình quan trọng
 
 ```
 backend/src/main/resources/
@@ -187,39 +215,175 @@ backend/src/main/resources/
 └── application-local.yml      # Override cho local dev (Supabase DB)
 
 ai-service/
-├── .env                       # Tạo từ .env.example
+├── .env                       # Biến môi trường AI service
 └── app/core/config.py         # Cấu hình AI service
 
 frontend/
-└── .env (hoặc dùng VITE_ vars từ .env gốc)
+└── .env.local                 # Biến môi trường frontend (VITE_*)
+
+# File gốc
+.env                           # Biến môi trường chung cho cả dự án
 ```
 
 ---
 
-## Chạy bằng Docker (tuỳ chọn)
+## 🔧 Các script tiện ích
+
+| File | Mô tả | Hệ điều hành |
+|------|-------|--------------|
+| `run-backend.bat` | Chạy Backend với JDK 21 | Windows |
+| `run-ai-service.bat` | Chạy AI Service | Windows |
+| `run-frontend.bat` | Chạy Frontend (nếu có) | Windows |
+
+---
+
+## 🐳 Chạy bằng Docker (tuỳ chọn)
 
 ```bash
-# Tạo .env trước, sau đó:
+# Đảm bảo có file .env
 docker-compose up --build
 ```
 
-> Lưu ý: docker-compose dùng PostgreSQL local. Để dùng Supabase, cần cập nhật `DATABASE_URL` trong `.env`.
+> ⚠️ **Lưu ý:** docker-compose mặc định dùng PostgreSQL local. 
+> Để dùng Supabase, cập nhật `DATABASE_URL` trong `docker-compose.yml`.
 
 ---
 
-## Troubleshooting
+## 🚨 Troubleshooting
 
-**❌ "Cannot find symbol" hoặc compile lỗi với Java**
-→ Kiểm tra `java -version`, đảm bảo là **21.x**, đặt lại `JAVA_HOME`.
+### ❌ Backend không compile được
 
-**❌ "pydantic-core build failed" khi pip install**
-→ Python 3.13+ chưa có prebuilt wheel. Dùng Python **3.10, 3.11, hoặc 3.12**.
+**Lỗi:** "Cannot find symbol" hoặc "Fatal error compiling"
 
-**❌ Backend lỗi "password authentication failed"**
-→ Kiểm tra file `application-local.yml` có đúng connection string Supabase chưa.
+**Nguyên nhân:** JDK không đúng phiên bản hoặc không set JAVA_HOME
 
-**❌ Frontend hiện "Cannot read properties of undefined"**
-→ Đảm bảo `VITE_API_BASE_URL=http://localhost:8081/api` trong `.env`.
+**Giải pháp:**
+```bash
+# Kiểm tra Java version
+java -version  # Phải hiện "21.x"
 
-**❌ Port 8081 đã bị dùng**
-→ `netstat -ano | findstr :8081` (Windows) để tìm PID, sau đó `taskkill /PID <pid> /F`.
+# Windows - Set JAVA_HOME
+set JAVA_HOME=C:\Program Files\Java\jdk-21
+set PATH=%JAVA_HOME%\bin;%PATH%
+
+# macOS
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home
+
+# Linux
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+```
+
+---
+
+### ❌ AI Service lỗi khi install dependencies
+
+**Lỗi:** "pydantic-core build failed" hoặc "Microsoft Visual C++ required"
+
+**Nguyên nhân:** Python 3.13+ chưa có prebuilt wheel cho một số package
+
+**Giải pháp:** Dùng Python **3.10, 3.11, hoặc 3.12**
+
+```bash
+python --version  # Kiểm tra version
+```
+
+Nếu dùng Python 3.13, hãy install lại Python 3.12:
+- Windows: https://www.python.org/downloads/release/python-3120/
+- macOS: `brew install python@3.12`
+
+---
+
+### ❌ Backend lỗi "password authentication failed"
+
+**Lỗi trong log:**
+```
+FATAL: password authentication failed for user "postgres"
+```
+
+**Giải pháp:** Kiểm tra file `backend/src/main/resources/application-local.yml`:
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://db.hszcipdxyhednqknunpa.supabase.co:5432/postgres?sslmode=require
+    username: postgres
+    password: biomed-predict123
+  flyway:
+    enabled: false  # Quan trọng: Phải disable Flyway
+```
+
+---
+
+### ❌ Frontend lỗi "Cannot read properties of undefined"
+
+**Nguyên nhân:** Frontend không kết nối được với Backend
+
+**Giải pháp:**
+
+1. Kiểm tra Backend đã chạy chưa: `curl http://localhost:8081/api/auth/login`
+2. Kiểm tra file `.env` hoặc `.env.local` trong `frontend/`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8081/api
+VITE_AI_BASE_URL=http://localhost:8000
+```
+
+3. Restart frontend sau khi sửa `.env`:
+```bash
+npm run dev
+```
+
+---
+
+### ❌ Port bị chiếm dụng
+
+**Lỗi:** "Port 8081 is already in use"
+
+**Windows:**
+```cmd
+# Tìm process đang dùng port
+netstat -ano | findstr :8081
+
+# Kill process
+taskkill /PID <PID> /F
+```
+
+**macOS / Linux:**
+```bash
+# Tìm và kill process
+lsof -ti:8081 | xargs kill -9
+```
+
+---
+
+### ❌ Flyway error "Unsupported Database: PostgreSQL 17.6"
+
+**Giải pháp:** Đã fix bằng cách disable Flyway trong `application-local.yml`:
+
+```yaml
+spring:
+  flyway:
+    enabled: false
+```
+
+Database schema đã được tạo sẵn trên Supabase, không cần migration.
+
+---
+
+## 📚 Tài liệu bổ sung
+
+- **API Documentation:** http://localhost:8081/swagger-ui.html (khi Backend chạy)
+- **AI Service API:** http://localhost:8000/docs (khi AI Service chạy)
+- **Architecture:** Xem thư mục `docs/` (nếu có)
+
+---
+
+## 🤝 Đóng góp
+
+Dự án đang trong giai đoạn phát triển. Mọi góp ý và pull request đều được chào đón!
+
+---
+
+## 📞 Liên hệ / Báo lỗi
+
+Nếu gặp vấn đề không thể tự giải quyết, vui lòng tạo issue trên GitHub repository hoặc liên hệ team phát triển.

@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./protected-route";
+import { AdminRoute } from "./admin-route";
 import { routePaths } from "./route-paths";
 import { AppShell } from "../../components/layout/app-shell";
 import { LoginPage } from "../../features/auth/pages/login.page";
@@ -52,10 +53,20 @@ export const router = createBrowserRouter([
           {
             path: routePaths.history,
             element: <HistoryPage />
-          },
+          }
+        ]
+      },
+      {
+        element: <AdminRoute />,
+        children: [
           {
-            path: routePaths.settings,
-            element: <SettingsPage />
+            element: <AppShell />,
+            children: [
+              {
+                path: routePaths.settings,
+                element: <SettingsPage />
+              }
+            ]
           }
         ]
       }
