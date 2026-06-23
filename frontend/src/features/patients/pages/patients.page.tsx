@@ -16,13 +16,15 @@ import { AddPatientModal } from '@/components/Patients/AddPatient';
 import { EditPatientModal } from '@/components/Patients/EditPatient';
 
 interface Patient {
-  id: number;
+  id: string;
   fullName: string;
-  gender: string;
+  sex: string;
   dateOfBirth: string;
-  citizenId: string;
+  mrn: string;
+  citizenId?: string;
   phone: string;
   status?: string;
+  allergies?: string;
   allergy?: string;
   latestTestName?: string;
   latestTestValue?: string;
@@ -173,20 +175,20 @@ export const PatientsPage = () => {
                         <div>
                           <p className="font-bold text-slate-900 text-sm">{patient.fullName || "Chưa cập nhật"}</p>
                           <p className="text-[11px] text-slate-400 mt-0.5">
-                            {patient.gender === "Male" || patient.gender === "Nam" ? "Nam" : "Nữ"} · {calculateAge(patient.dateOfBirth)} tuổi
+                            {patient.sex === "Male" || patient.sex === "Nam" ? "Nam" : "Nữ"} · {calculateAge(patient.dateOfBirth)} tuổi
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 font-mono text-slate-500">{patient.citizenId || `#BN-2026-${String(patient.id).padStart(3, '0')}`}</td>
+                    <td className="py-4 px-4 font-mono text-slate-500">{patient.mrn || patient.citizenId || `#BN-2026-${String(patient.id).padStart(3, '0')}`}</td>
                     <td className="py-4 px-4">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${patient.status === "Ổn định" ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-amber-50 text-amber-600 border border-amber-100"}`}>
                         {patient.status || "Theo dõi"}
                       </span>
                     </td>
                     <td className="py-4 px-4">
-                      {patient.allergy && patient.allergy !== "Không có" ? (
-                        <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-100 font-bold text-[11px]">{patient.allergy}</span>
+                      {(patient.allergies || patient.allergy) && (patient.allergies || patient.allergy) !== "Không có" ? (
+                        <span className="px-2 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-100 font-bold text-[11px]">{patient.allergies || patient.allergy}</span>
                       ) : (
                         <span className="text-slate-400 font-normal">Không có</span>
                       )}

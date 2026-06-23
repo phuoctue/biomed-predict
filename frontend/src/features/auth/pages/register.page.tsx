@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Lock, Mail, User, Phone, ShieldCheck, ArrowRight } from 'lucide-react';
+import { apiClient } from '../../../lib/api-client';
 
 // Đường dẫn 3 cấp đi ra src/components tương tự trang login
 import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
@@ -24,22 +25,21 @@ export function RegisterPage() {
       return;
     }
     setLoading(true);
-
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, phone, licenseId, password, role }),
+      const response = await apiClient.post('/users', {
+        fullName,
+        email,
+        password,
+        role: role === 'doctor' ? 'DOCTOR' : role === 'pharmacist' ? 'PHARMACIST' : 'MEDICAL_STAFF',
+        department: licenseId,
       });
-
-      const result = await response.json();
-      if (result.success) {
-        alert('Đăng ký tài khoản chuyên gia thành công!');
-      } else {
-        alert(result.message || 'Đăng ký thất bại');
+      if (response.data?.success) {
+        alert('Tạo tài khoản thành công!');
+        window.location.replace('/login');
       }
-    } catch (error) {
-      console.error('Lỗi kết nối API đăng ký:', error);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Đăng ký thất bại';
+      alert(msg);
     } finally {
       setLoading(false);
     }

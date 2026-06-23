@@ -4,8 +4,8 @@ import { EditUserModal } from '@/components/SystemAdministration/EditUserModal';
 
 // 1. Định nghĩa kiểu dữ liệu User để TypeScript hiểu cấu trúc
 interface User {
-  id: number;
-  name: string;
+  id: string;
+  fullName: string;
   email: string;
   role: string;
   status: string;
@@ -14,16 +14,16 @@ interface User {
 export const UserTable = () => {
   // 2. Áp dụng kiểu User[] vào useState
   const [users, setUsers] = useState<User[]>([
-    { id: 1, name: "BS. Trần Hoàng", email: "hoang.tran@medeval.vn", role: "Bác sĩ", status: "Hoạt động" },
-    { id: 2, name: "DS. Lê Minh", email: "minh.le@medeval.vn", role: "Dược sĩ", status: "Hoạt động" },
-    { id: 3, name: "Phạm Thu", email: "thu.pham@medeval.vn", role: "Quản trị", status: "Ngoại tuyến" },
+    { id: '1', fullName: "BS. Trần Hoàng", email: "hoang.tran@medeval.vn", role: "Bác sĩ", status: "Hoạt động" },
+    { id: '2', fullName: "DS. Lê Minh", email: "minh.le@medeval.vn", role: "Dược sĩ", status: "Hoạt động" },
+    { id: '3', fullName: "Phạm Thu", email: "thu.pham@medeval.vn", role: "Quản trị", status: "Ngoại tuyến" },
   ]);
 
   // 3. Khai báo rõ ràng kiểu cho editingUser là User hoặc null
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
       setUsers(users.filter((u) => u.id !== id));
     }
@@ -46,7 +46,7 @@ export const UserTable = () => {
           {users.map((u) => (
             <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
               <td className="py-4">
-                <div className="font-bold text-slate-900">{u.name}</div>
+                <div className="font-bold text-slate-900">{u.fullName}</div>
                 <div className="text-[11px] text-slate-400">{u.email}</div>
               </td>
               <td className="py-4 text-slate-700 font-medium">{u.role}</td>

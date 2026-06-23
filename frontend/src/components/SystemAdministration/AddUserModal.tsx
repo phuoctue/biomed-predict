@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, User, Shield, Mail, Lock } from 'lucide-react';
+import { apiClient } from '../../lib/api-client';
 
 interface Props {
   isOpen: boolean;
@@ -7,13 +8,36 @@ interface Props {
   onSuccess: () => void;
 }
 
+const roleMap: Record<string, string> = {
+  doctor: 'DOCTOR',
+  pharmacist: 'PHARMACIST',
+  admin: 'ADMIN',
+};
+
 export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('doctor');
+
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Xử lý API tại đây
-    onSuccess();
+    if (password !== confirmPassword) {
+      alert('Mật khẩu không khớp');
+      return;
+    }
+    try {
+      await apiClient.post('/users', { fullName, email, password, role: roleMap[role] });
+      onSuccess();
+    } catch (err: unknown) {
+      alert(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+          'Lỗi tạo người dùng'
+      );
+    }
   };
 
   // Cập nhật inputClass: Thêm text-slate-900 và font-medium để chữ rõ nét
@@ -36,7 +60,14 @@ export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Người dùng</label>
             <div className="relative">
               <User className={iconClass} size={18} />
-              <input type="text" required className={inputClass} placeholder="Họ và tên" />
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className={inputClass}
+                placeholder="Họ và tên"
+              />
             </div>
           </div>
 
@@ -45,7 +76,11 @@ export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Vai trò</label>
             <div className="relative">
               <Shield className={iconClass} size={18} />
-              <select className={inputClass}>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className={inputClass}
+              >
                 <option value="doctor">Bác sĩ</option>
                 <option value="pharmacist">Dược sĩ</option>
                 <option value="admin">Quản trị</option>
@@ -58,7 +93,14 @@ export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <div className="relative">
               <Mail className={iconClass} size={18} />
-              <input type="email" required className={inputClass} placeholder="example@medeval.vn" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder="example@medeval.vn"
+              />
             </div>
           </div>
 
@@ -67,7 +109,14 @@ export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Mật khẩu</label>
             <div className="relative">
               <Lock className={iconClass} size={18} />
-              <input type="password" required className={inputClass} placeholder="••••••••" />
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                placeholder="••••••••"
+              />
             </div>
           </div>
 
@@ -76,15 +125,29 @@ export const AddUserModal = ({ isOpen, onClose, onSuccess }: Props) => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Xác nhận mật khẩu</label>
             <div className="relative">
               <Lock className={iconClass} size={18} />
-              <input type="password" required className={inputClass} placeholder="••••••••" />
+              <input
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={inputClass}
+                placeholder="••••••••"
+              />
             </div>
           </div>
 
           <div className="pt-4 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2 rounded-lg font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+            >
               Hủy
             </button>
-            <button type="submit" className="flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all">
+            <button
+              type="submit"
+              className="flex-1 py-2 rounded-lg font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all"
+            >
               Thêm người dùng
             </button>
           </div>

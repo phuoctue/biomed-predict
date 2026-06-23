@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { apiClient } from '../../lib/api-client';
 
 interface Props {
   isOpen: boolean;
@@ -12,17 +13,20 @@ export const AddPatientModal = ({ isOpen, onClose, onSuccess }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Thu thập dữ liệu từ form
     const formData = new FormData(e.target as HTMLFormElement);
-    const data = Object.fromEntries(formData.entries());
-    
-    console.log("Dữ liệu bệnh nhân gửi đi:", data);
-
-    // TODO: Thực hiện gọi API POST ở đây
-    // await apiClient.post("/patients", data);
-    
-    onSuccess();
+    const raw = Object.fromEntries(formData.entries());
+    try {
+      await apiClient.post('/patients', {
+        fullName: raw.fullName,
+        mrn: raw.citizenId,      // form field "citizenId" maps to mrn
+        sex: 'Unknown',
+        allergies: raw.allergy || null,
+      });
+      onSuccess();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Không thể thêm bệnh nhân';
+      alert(msg);
+    }
   };
 
   return (

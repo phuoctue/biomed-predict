@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Mail, Lock, User } from 'lucide-react';
+import { apiClient } from '../../lib/api-client';
 
 // Định nghĩa kiểu dữ liệu cho User và Props
 interface User {
-  id: number;
-  name: string;
+  id: string;
+  fullName: string;
   email: string;
   role: string;
   status: string;
@@ -19,8 +20,30 @@ interface Props {
 
 export const EditUserModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const newPasswordRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen || !user) return null;
+
+  const handleSave = async () => {
+    try {
+      const payload: Record<string, string> = {
+        fullName: fullNameRef.current?.value ?? user.fullName,
+        email: emailRef.current?.value ?? user.email,
+      };
+      if (isChangingPassword && newPasswordRef.current?.value) {
+        payload.password = newPasswordRef.current.value;
+      }
+      await apiClient.put(`/users/${user.id}`, payload);
+      onSuccess();
+    } catch (err: unknown) {
+      alert(
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+          'Không thể cập nhật người dùng'
+      );
+    }
+  };
 
   // Class dùng chung cho các input để đảm bảo đồng bộ giao diện
   const inputClass = "w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 font-medium placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none";
@@ -40,13 +63,13 @@ export const EditUserModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
           {/* Tên */}
           <div className="relative">
             <User className={iconClass} size={18} />
-            <input defaultValue={user.name} className={inputClass} placeholder="Họ và tên" />
+            <input ref={fullNameRef} defaultValue={user.fullName} className={inputClass} placeholder="Họ và tên" />
           </div>
 
           {/* Email */}
           <div className="relative">
             <Mail className={iconClass} size={18} />
-            <input defaultValue={user.email} className={inputClass} placeholder="Email" />
+            <input ref={emailRef} defaultValue={user.email} className={inputClass} placeholder="Email" />
           </div>
           
           {/* Checkbox Đổi MK */}
@@ -67,7 +90,7 @@ export const EditUserModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
             <div className="space-y-4 mt-2">
               <div className="relative">
                 <Lock className={iconClass} size={18} />
-                <input type="password" placeholder="Mật khẩu mới" className={inputClass} />
+                <input ref={newPasswordRef} type="password" placeholder="Mật khẩu mới" className={inputClass} />
               </div>
               <div className="relative">
                 <Lock className={iconClass} size={18} />
@@ -78,7 +101,7 @@ export const EditUserModal = ({ isOpen, user, onClose, onSuccess }: Props) => {
         </div>
         
         <button 
-          onClick={onSuccess} 
+          onClick={handleSave}
           className="w-full mt-6 bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20"
         >
           Cập nhật

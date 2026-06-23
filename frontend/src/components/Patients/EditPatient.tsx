@@ -1,9 +1,11 @@
-
+import React, { useRef } from 'react';
 import { X } from 'lucide-react';
+import { apiClient } from '../../lib/api-client';
 
 interface Patient {
-  id: number;
-  citizenId: string;
+  id: string;  // UUID
+  fullName?: string;
+  citizenId?: string;
   status?: string;
   allergy?: string;
   latestTestName?: string;
@@ -13,20 +15,28 @@ interface EditPatientProps {
   isOpen: boolean;
   onClose: () => void;
   patient: Patient;
-  onSuccess: () => void; // Thêm prop này để làm mới danh sách sau khi lưu
+  onSuccess: () => void;
 }
 
 export const EditPatientModal = ({ isOpen, onClose, patient, onSuccess }: EditPatientProps) => {
-  // Bạn có thể dùng state để lưu giá trị input nếu muốn kiểm soát form chặt chẽ hơn
-  
+  const citizenIdRef = useRef<HTMLInputElement>(null);
+  const statusRef = useRef<HTMLInputElement>(null);
+  const allergyRef = useRef<HTMLInputElement>(null);
+  const latestTestNameRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
 
   const handleSave = async () => {
-    // 1. Thực hiện gọi API cập nhật tại đây:
-    // await apiClient.put(`/patients/${patient.id}`, data);
-    
-    // 2. Sau khi thành công:
-    onSuccess();
+    try {
+      await apiClient.put(`/patients/${patient.id}`, {
+        mrn: citizenIdRef.current?.value,
+        allergies: allergyRef.current?.value,
+      });
+      onSuccess();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Không thể cập nhật';
+      alert(msg);
+    }
   };
 
   // Style chung cho input để đồng bộ
@@ -45,16 +55,16 @@ export const EditPatientModal = ({ isOpen, onClose, patient, onSuccess }: EditPa
 
         <div className="space-y-1">
           <label className={labelStyle}>Mã HS</label>
-          <input className={inputStyle} defaultValue={patient.citizenId ?? ""} />
+          <input ref={citizenIdRef} className={inputStyle} defaultValue={patient.citizenId ?? ""} />
           
           <label className={labelStyle}>Trạng thái</label>
-          <input className={inputStyle} defaultValue={patient.status ?? ""} />
+          <input ref={statusRef} className={inputStyle} defaultValue={patient.status ?? ""} />
           
           <label className={labelStyle}>Dị ứng</label>
-          <input className={inputStyle} defaultValue={patient.allergy ?? ""} />
+          <input ref={allergyRef} className={inputStyle} defaultValue={patient.allergy ?? ""} />
           
           <label className={labelStyle}>Xét nghiệm gần nhất</label>
-          <input className={inputStyle} defaultValue={patient.latestTestName ?? ""} />
+          <input ref={latestTestNameRef} className={inputStyle} defaultValue={patient.latestTestName ?? ""} />
         </div>
 
         <div className="mt-8 flex justify-end gap-3">

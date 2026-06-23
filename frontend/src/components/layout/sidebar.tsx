@@ -4,9 +4,11 @@ import { routePaths } from '../../app/routes/route-paths';
 import { 
   LayoutDashboard, Users, Pill, ShieldAlert, LogOut, Activity, History, Settings 
 } from 'lucide-react';
+import { useAuthStore } from '../../features/auth/store/auth.store';
 
 export const Sidebar = () => {
   const location = useLocation();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
 
   const menuItems = [
     { path: routePaths.dashboard, label: 'Tổng quan', icon: <LayoutDashboard className="h-5 w-5" /> },
@@ -18,7 +20,7 @@ export const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    clearAuth();
     window.location.replace(routePaths.login);
   };
 

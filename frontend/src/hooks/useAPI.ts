@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import * as api from './api';
+import * as api from '../services/api';
 
 export const usePatient = () => {
   const [patient, setPatient] = useState<any>(null);
@@ -81,7 +81,7 @@ export const useAIEvaluation = () => {
   const createEvaluation = useCallback(async (data: any) => {
     setLoading(true);
     try {
-      const response = await api.aiEvaluationAPI.create(data);
+      const response = await api.aiEvaluationAPI.evaluate(data);
       setEvaluation(response.data.data);
       setError(null);
       return response.data.data;
