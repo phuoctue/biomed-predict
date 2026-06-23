@@ -6,7 +6,7 @@ import { RiskAlert } from "@/components/evaluations/RiskAlert";
 import { ActionFooter } from "@/components/evaluations/ActionFooter";
 import { AIAnalysisStatus } from "@/components/evaluations/AIAnalysisStatus";
 import { usePatients } from "@/hooks/usePatients";
-import apiClient from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 import { Loader2, AlertCircle } from "lucide-react";
 
 export const EvaluationPage = () => {

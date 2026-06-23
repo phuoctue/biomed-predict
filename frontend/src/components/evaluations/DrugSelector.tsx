@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, X, Search } from "lucide-react";
-import apiClient from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 export interface DrugSelectorItem {
   id: string;
