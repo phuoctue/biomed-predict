@@ -5,10 +5,12 @@ import { FilterBar } from "@/components/ui-drugs/FilterBar";
 import { DrugsTable } from "@/components/ui-drugs/DrugsTable";
 import { TrendChart } from "@/components/ui-drugs/TrendChart";
 import { AddButton } from "@/components/ui/AddButton";
+import { AddDrugModal } from "@/components/ui-drugs/AddDrugModal"; // Đảm bảo đường dẫn import đúng
 
 export const DrugsPage = () => {
   const [page, setPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState(""); 
+  const [isAddDrugOpen, setIsAddDrugOpen] = useState(false); // State quản lý Modal
 
   const { drugs, loading, totalPages } = useDrugs(page, searchQuery);
 
@@ -19,12 +21,14 @@ export const DrugsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
           <StatsSection />
+          
           <AddButton 
-                label="Thêm thuốc mới" 
-                onClick={() => console.log("Mở modal thêm thuốc...")} 
-              />
+            label="Thêm thuốc mới" 
+            onClick={() => setIsAddDrugOpen(true)} // Mở modal khi nhấn nút
+          />
+
           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-            {/* Header: Thanh tìm kiếm + Nút Thêm mới */}
+            {/* Header: Thanh tìm kiếm */}
             <div className="flex items-center gap-3 mb-4 w-full">
               <div className="flex-1">
                 <FilterBar 
@@ -55,6 +59,12 @@ export const DrugsPage = () => {
           <TrendChart />
         </div>
       </div>
+
+      {/* Modal Thêm thuốc mới */}
+      <AddDrugModal 
+        isOpen={isAddDrugOpen} 
+        onClose={() => setIsAddDrugOpen(false)} 
+      />
     </div>
   );
 };
