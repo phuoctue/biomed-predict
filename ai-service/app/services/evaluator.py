@@ -2,9 +2,14 @@ from app.core.llm import build_prompt, call_llm
 from app.schemas.evaluation import EvaluationRequest, EvaluationResponse
 import json
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def evaluate_medication(payload: EvaluationRequest) -> EvaluationResponse:
+    logger.info(f"=== Starting evaluation for drug: {payload.drug_name} ===")
+    logger.info(f"Patient age: {payload.patient_age}, Diagnosis: {payload.diagnosis}")
     # Build detailed prompt for LLM
     prompt = f"""You are an expert clinical pharmacist AI assistant. Analyze this medication for a patient and provide a structured evaluation.
 
@@ -37,21 +42,28 @@ Format your response as JSON:
 Be specific to this patient's age, diagnosis, and allergies. Consider drug interactions, contraindications, and age-related factors."""
 
     # Call LLM
+    logger.info("Calling LLM with prompt...")
     llm_response = await call_llm(prompt)
+    logger.info(f"LLM Response received: {llm_response[:200]}...")
     
     # Try to parse LLM JSON response
     try:
+        logger.info("Attempting to parse LLM response as JSON...")
         # Extract JSON from response (handle markdown code blocks)
         json_match = re.search(r'```json\s*(\{.*?\})\s*```', llm_response, re.DOTALL)
         if json_match:
+            logger.info("Found JSON in markdown code block")
             llm_data = json.loads(json_match.group(1))
         else:
             # Try direct JSON parse
             json_match = re.search(r'\{.*\}', llm_response, re.DOTALL)
             if json_match:
+                logger.info("Found JSON in response body")
                 llm_data = json.loads(json_match.group(0))
             else:
                 raise ValueError("No JSON found in LLM response")
+        
+        logger.info(f"Successfully parsed LLM data: score={llm_data.get('suitability_score')}, risk={llm_data.get('risk_level')}")
         
         return EvaluationResponse(
             suitability_score=llm_data.get("suitability_score", 70),
@@ -64,8 +76,9 @@ Be specific to this patient's age, diagnosis, and allergies. Consider drug inter
     
     except Exception as e:
         # Fallback to rule-based if LLM parsing fails
-        print(f"LLM parsing failed: {e}")
-        print(f"LLM Response: {llm_response[:500]}")
+        logger.error(f"LLM parsing failed: {e}")
+        logger.error(f"LLM Response (first 500 chars): {llm_response[:500]}")
+        logger.warning("Using fallback rule-based evaluation")
         
         # Fallback logic
         has_allergy = bool(payload.allergies)
