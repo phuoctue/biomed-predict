@@ -1,5 +1,7 @@
 package com.mediai.service;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,8 +29,8 @@ public class BookmarkService {
     }
 
     @Transactional
-    public DrugSummaryResponse addBookmark(Long userId, Long drugId) {
-        if (bookmarkRepository.existsByUserIdAndDrugId(userId, drugId)) {
+    public DrugSummaryResponse addBookmark(UUID userId, UUID drugId) {
+        if (bookmarkRepository.existsByUser_IdAndDrug_Id(userId, drugId)) {
             throw new IllegalStateException("Drug already bookmarked.");
         }
         var user = userRepository.findById(userId)
@@ -41,18 +43,18 @@ public class BookmarkService {
     }
 
     @Transactional
-    public void removeBookmark(Long userId, Long drugId) {
-        bookmarkRepository.deleteByUserIdAndDrugId(userId, drugId);
+    public void removeBookmark(UUID userId, UUID drugId) {
+        bookmarkRepository.deleteByUser_IdAndDrug_Id(userId, drugId);
     }
 
     @Transactional(readOnly = true)
-    public Page<DrugSummaryResponse> getBookmarks(Long userId, Pageable pageable) {
-        return bookmarkRepository.findByUserId(userId, pageable)
+    public Page<DrugSummaryResponse> getBookmarks(UUID userId, Pageable pageable) {
+        return bookmarkRepository.findByUser_Id(userId, pageable)
                 .map(b -> DrugSummaryResponse.from(b.getDrug()));
     }
 
     @Transactional(readOnly = true)
-    public boolean isBookmarked(Long userId, Long drugId) {
-        return bookmarkRepository.existsByUserIdAndDrugId(userId, drugId);
+    public boolean isBookmarked(UUID userId, UUID drugId) {
+        return bookmarkRepository.existsByUser_IdAndDrug_Id(userId, drugId);
     }
 }

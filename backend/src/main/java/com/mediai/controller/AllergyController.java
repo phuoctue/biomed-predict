@@ -1,6 +1,7 @@
 package com.mediai.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +34,13 @@ public class AllergyController {
 
     @GetMapping
     public ApiResponse<List<AllergyResponse>> listAllergies(
-            @RequestParam(required = false) Long patientId) {
+            @RequestParam(required = false) UUID patientId) {
         return ApiResponse.ok("Allergies retrieved successfully.",
                 allergyService.listAllergies(patientId));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<AllergyResponse> getAllergy(@PathVariable Long id) {
+    public ApiResponse<AllergyResponse> getAllergy(@PathVariable UUID id) {
         return ApiResponse.ok("Allergy retrieved successfully.", allergyService.getAllergy(id));
     }
 
@@ -53,14 +54,14 @@ public class AllergyController {
 
     @PutMapping("/{id}")
     public ApiResponse<AllergyResponse> updateAllergy(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody AllergyRequest request) {
         return ApiResponse.ok("Allergy updated successfully.",
                 allergyService.updateAllergy(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteAllergy(@PathVariable Long id) {
+    public ApiResponse<String> deleteAllergy(@PathVariable UUID id) {
         allergyService.deleteAllergy(id);
         return ApiResponse.ok("Allergy deleted successfully.", "deleted");
     }

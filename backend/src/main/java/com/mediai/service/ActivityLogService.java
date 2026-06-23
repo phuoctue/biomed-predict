@@ -56,7 +56,7 @@ public class ActivityLogService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUser(Long userId, Pageable pageable) {
+    public Page<ActivityLogResponse> getActivityLogsByUser(UUID userId, Pageable pageable) {
         return activityLogRepository.findByUser_Id(userId, pageable).map(this::toResponse);
     }
 
@@ -75,7 +75,7 @@ public class ActivityLogService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUserAndActionType(Long userId, String actionType,
+    public Page<ActivityLogResponse> getActivityLogsByUserAndActionType(UUID userId, String actionType,
             Pageable pageable) {
         return activityLogRepository
                 .findByUser_IdAndActionType(userId, ActionType.valueOf(actionType.toUpperCase()), pageable)
@@ -83,7 +83,7 @@ public class ActivityLogService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getActivityLogsByUserAndEntity(Long userId, String entityType,
+    public Page<ActivityLogResponse> getActivityLogsByUserAndEntity(UUID userId, String entityType,
             Pageable pageable) {
         return activityLogRepository.findByUser_IdAndEntityType(userId, entityType, pageable)
                 .map(this::toResponse);

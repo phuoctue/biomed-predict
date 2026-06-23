@@ -1,0 +1,7 @@
+@echo off
+set JAVA_HOME=C:\Program Files\Java\jdk-21
+set PATH=%JAVA_HOME%\bin;%PATH%
+echo Using Java: %JAVA_HOME%
+java -version
+cd /d "%~dp0backend"
+mvn spring-boot:run -Dspring-boot.run.profiles=local -DskipTests

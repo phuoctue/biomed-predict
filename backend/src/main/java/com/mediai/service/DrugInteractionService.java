@@ -1,6 +1,7 @@
 package com.mediai.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class DrugInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public List<DrugInteractionResponse> listAll(Long drugId) {
+    public List<DrugInteractionResponse> listAll(UUID drugId) {
         if (drugId == null) {
             return drugInteractionRepository.findAll().stream()
                     .map(DrugInteractionResponse::from).toList();
@@ -37,7 +38,7 @@ public class DrugInteractionService {
     }
 
     @Transactional(readOnly = true)
-    public DrugInteractionResponse getInteraction(Long id) {
+    public DrugInteractionResponse getInteraction(UUID id) {
         return DrugInteractionResponse.from(findInteraction(id));
     }
 
@@ -49,18 +50,18 @@ public class DrugInteractionService {
     }
 
     @Transactional
-    public DrugInteractionResponse updateInteraction(Long id, DrugInteractionRequest request) {
+    public DrugInteractionResponse updateInteraction(UUID id, DrugInteractionRequest request) {
         var interaction = findInteraction(id);
         applyRequest(interaction, request);
         return DrugInteractionResponse.from(drugInteractionRepository.save(interaction));
     }
 
     @Transactional
-    public void deleteInteraction(Long id) {
+    public void deleteInteraction(UUID id) {
         drugInteractionRepository.delete(findInteraction(id));
     }
 
-    private DrugInteraction findInteraction(Long id) {
+    private DrugInteraction findInteraction(UUID id) {
         return drugInteractionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug interaction not found."));
     }

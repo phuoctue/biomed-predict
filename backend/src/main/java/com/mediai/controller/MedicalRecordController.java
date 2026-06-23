@@ -1,5 +1,7 @@
 package com.mediai.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +33,7 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<MedicalRecord>> getMedicalRecord(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<MedicalRecord>> getMedicalRecord(@PathVariable UUID id) {
         MedicalRecord record = medicalRecordService.getMedicalRecordById(id);
         return ResponseEntity.ok(ApiResponse.ok("Medical record retrieved successfully.", record));
     }

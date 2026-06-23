@@ -20,24 +20,22 @@ import lombok.Setter;
 @Builder
 public class Patient extends BaseEntity {
 
-    // V1 migration uses `patient_code` as the unique patient identifier (MRN)
-    @Column(name = "patient_code", nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true, length = 64)
     private String mrn;
 
-    @Column(name = "full_name", nullable = false, length = 100)
+    @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
-    // V1 migration uses `gender` column name (nullable)
-    @Column(name = "gender", length = 20)
+    @Column(length = 20)
     private String sex;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @Column(name = "citizen_id", unique = true, length = 20)
+    @Column(name = "citizen_id", unique = true, length = 64)
     private String citizenId;
 
-    @Column(length = 20)
+    @Column(length = 32)
     private String phone;
 
     @Column(columnDefinition = "text")
@@ -52,16 +50,16 @@ public class Patient extends BaseEntity {
     @Column(name = "blood_type", length = 10)
     private String bloodType;
 
-    @Column(name = "insurance_number", unique = true, length = 30)
+    @Column(name = "insurance_number", unique = true, length = 64)
     private String insuranceNumber;
 
-    @Column(name = "emergency_contact_name", length = 100)
+    @Column(name = "emergency_contact_name", length = 255)
     private String emergencyContactName;
 
-    @Column(name = "emergency_contact_phone", length = 20)
+    @Column(name = "emergency_contact_phone", length = 32)
     private String emergencyContactPhone;
 
-    @Column(name = "emergency_contact_relation", length = 50)
+    @Column(name = "emergency_contact_relation", length = 100)
     private String emergencyContactRelation;
 
     @Column(columnDefinition = "text")

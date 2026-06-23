@@ -1,5 +1,7 @@
 package com.mediai.controller;
 
+import java.util.UUID;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -50,7 +52,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
-    public ApiResponse<UserResponse> getUser(@PathVariable Long id) {
+    public ApiResponse<UserResponse> getUser(@PathVariable UUID id) {
         return ApiResponse.ok("User retrieved successfully.", userService.getUser(id));
     }
 
@@ -65,7 +67,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> updateUser(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
         return ApiResponse.ok("User updated successfully.", userService.updateUser(id, request));
     }
@@ -73,7 +75,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> deleteUser(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         userService.deleteUser(id, currentUser.id());
         return ApiResponse.ok("User deleted successfully.", "deleted");
@@ -82,7 +84,7 @@ public class UserController {
     @PutMapping("/{id}/password")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> changePassword(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request);
         return ApiResponse.ok("Password changed successfully.", "updated");

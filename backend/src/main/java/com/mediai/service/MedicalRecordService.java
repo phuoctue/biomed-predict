@@ -1,5 +1,7 @@
 package com.mediai.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +21,12 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(medicalRecord);
     }
 
-    public MedicalRecord getMedicalRecordById(Long id) {
+    public MedicalRecord getMedicalRecordById(UUID id) {
         return medicalRecordRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Medical record not found"));
     }
 
-    public MedicalRecord updateMedicalRecord(Long id, MedicalRecord recordDetails) {
+    public MedicalRecord updateMedicalRecord(UUID id, MedicalRecord recordDetails) {
         MedicalRecord record = getMedicalRecordById(id);
         record.setSymptoms(recordDetails.getSymptoms());
         record.setDiagnosis(recordDetails.getDiagnosis());
@@ -33,9 +35,8 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(record);
     }
 
-    public void deleteMedicalRecord(Long id) {
+    public void deleteMedicalRecord(UUID id) {
         MedicalRecord record = getMedicalRecordById(id);
-        record.setDeleted(true);
-        medicalRecordRepository.save(record);
+        medicalRecordRepository.delete(record);
     }
 }

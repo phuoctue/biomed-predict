@@ -1,13 +1,14 @@
 package com.mediai.dto.ai.response;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Data;
 
 @Data
 public class AIEvaluationDetailResponse {
-    private Long id;
-    private Long prescriptionId;
+    private UUID id;
+    private UUID prescriptionId;
     private Double overallScore;
     private String overallRisk;
     private Double confidenceScore;

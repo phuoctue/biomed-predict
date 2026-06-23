@@ -1,12 +1,13 @@
 package com.mediai.ai.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record AIEvaluationSummaryResponse(
-        Long id,
-        Long patientId,
+        UUID id,
+        UUID patientId,
         String patientName,
-        Long drugId,
+        UUID drugId,
         String drugName,
         Integer suitabilityScore,
         Integer confidenceScore,

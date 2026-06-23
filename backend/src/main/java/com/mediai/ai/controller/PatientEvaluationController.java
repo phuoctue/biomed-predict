@@ -118,9 +118,12 @@ public class PatientEvaluationController {
 
     private PrescribedDrugDTO mapDrug(ResultSet rs, int rowNum) throws SQLException {
         String idStr = rs.getString("id");
-        long fakeId = idStr != null ? Math.abs(idStr.hashCode()) : 0L;
+        java.util.UUID parsedId = null;
+        try {
+            parsedId = idStr != null ? java.util.UUID.fromString(idStr) : null;
+        } catch (IllegalArgumentException ignored) {}
         return new PrescribedDrugDTO(
-                fakeId,
+                parsedId,
                 rs.getString("name"),
                 rs.getString("generic_name"),
                 rs.getString("dosage"),
@@ -132,9 +135,12 @@ public class PatientEvaluationController {
 
     private InteractionDTO mapInteraction(ResultSet rs, int rowNum) throws SQLException {
         String idStr = rs.getString("id");
-        long fakeId = idStr != null ? Math.abs(idStr.hashCode()) : 0L;
+        java.util.UUID parsedId = null;
+        try {
+            parsedId = idStr != null ? java.util.UUID.fromString(idStr) : null;
+        } catch (IllegalArgumentException ignored) {}
         return new InteractionDTO(
-                fakeId,
+                parsedId,
                 rs.getString("drug_pair"),
                 rs.getString("severity"),
                 rs.getString("description"),

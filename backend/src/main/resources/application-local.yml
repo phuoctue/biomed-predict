@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db.hszcipdxyhednqknunpa.supabase.co:5432/postgres?sslmode=require
+    username: postgres
+    password: biomed-predict123
+
+server:
+  port: 8081

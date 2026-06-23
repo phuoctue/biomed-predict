@@ -1,12 +1,13 @@
 package com.mediai.dto.user;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import com.mediai.entity.User;
 import com.mediai.entity.UserRole;
 
 public record UserResponse(
-        Long id,
+        UUID id,
         String email,
         String fullName,
         String role,
@@ -26,10 +27,9 @@ public record UserResponse(
     }
 
     private static String resolveRoleName(User user) {
-        if (user == null || user.getRole() == null || user.getRole().getName() == null) {
+        if (user == null || user.getRole() == null || user.getRole().isBlank()) {
             return UserRole.MEDICAL_STAFF.name();
         }
-        return UserRole.fromDbName(user.getRole().getName()).name();
+        return UserRole.fromDbName(user.getRole()).name();
     }
-}
 }

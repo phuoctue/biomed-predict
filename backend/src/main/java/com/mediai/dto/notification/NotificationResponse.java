@@ -6,8 +6,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record NotificationResponse(
-        @JsonProperty("id") Long id,
-        @JsonProperty("recipientId") Long recipientId,
+        @JsonProperty("id") UUID id,
+        @JsonProperty("recipientId") UUID recipientId,
         @JsonProperty("title") String title,
         @JsonProperty("message") String message,
         @JsonProperty("type") String type,

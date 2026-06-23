@@ -34,7 +34,7 @@ public class MedicationController {
 
     @GetMapping
     public ApiResponse<List<MedicationResponse>> listMedications(
-            @RequestParam(required = false) Long patientId) {
+            @RequestParam(required = false) UUID patientId) {
         return ApiResponse.ok("Medications retrieved successfully.",
                 medicationService.listMedications(patientId));
     }

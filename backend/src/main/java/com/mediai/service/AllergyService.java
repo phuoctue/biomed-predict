@@ -1,6 +1,7 @@
 package com.mediai.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ public class AllergyService {
     }
 
     @Transactional(readOnly = true)
-    public List<AllergyResponse> listAllergies(Long patientId) {
+    public List<AllergyResponse> listAllergies(UUID patientId) {
         if (patientId != null) {
             return allergyRepository.findByPatient_Id(patientId).stream()
                     .map(AllergyResponse::from).toList();
@@ -42,7 +43,7 @@ public class AllergyService {
     }
 
     @Transactional(readOnly = true)
-    public AllergyResponse getAllergy(Long id) {
+    public AllergyResponse getAllergy(UUID id) {
         return AllergyResponse.from(findAllergy(id));
     }
 
@@ -66,7 +67,7 @@ public class AllergyService {
     }
 
     @Transactional
-    public AllergyResponse updateAllergy(Long id, AllergyRequest request) {
+    public AllergyResponse updateAllergy(UUID id, AllergyRequest request) {
         var allergy = findAllergy(id);
         allergy.setSeverity(request.severity());
         allergy.setReaction(request.reaction());
@@ -75,11 +76,11 @@ public class AllergyService {
     }
 
     @Transactional
-    public void deleteAllergy(Long id) {
+    public void deleteAllergy(UUID id) {
         allergyRepository.delete(findAllergy(id));
     }
 
-    private PatientAllergy findAllergy(Long id) {
+    private PatientAllergy findAllergy(UUID id) {
         return allergyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Allergy not found."));
     }

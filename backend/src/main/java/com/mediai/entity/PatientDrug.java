@@ -1,9 +1,13 @@
 package com.mediai.entity;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,16 +27,16 @@ public class PatientDrug extends BaseEntity {
     @JoinColumn(name = "drug_id", nullable = false)
     private Drug drug;
 
-    @Column(name = "dosage")
+    @Column(length = 255)
     private String dosage;
 
-    @Column(name = "frequency")
+    @Column(length = 255)
     private String frequency;
 
-    @Column(name = "indication", columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String indication;
 
-    @Column(name = "status", nullable = false, length = 50)
+    @Column(nullable = false, length = 50)
     private String status = "ACTIVE";
 
     @Column(name = "status_text", length = 255)

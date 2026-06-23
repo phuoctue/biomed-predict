@@ -1,11 +1,13 @@
 package com.mediai.dto.vitalsign.response;
 
+import java.util.UUID;
+
 import lombok.Data;
 
 @Data
 public class VitalSignResponse {
-    private Long id;
-    private Long medicalRecordId;
+    private UUID id;
+    private UUID medicalRecordId;
     private Double height;
     private Double weight;
     private Double temperature;

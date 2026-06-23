@@ -1,10 +1,12 @@
 package com.mediai.dto.drug.response;
 
+import java.util.UUID;
+
 import lombok.Data;
 
 @Data
 public class DrugResponse {
-    private Long id;
+    private UUID id;
     private String drugCode;
     private String genericName;
     private String brandName;

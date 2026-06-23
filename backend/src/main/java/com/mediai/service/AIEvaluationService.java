@@ -1,5 +1,7 @@
 package com.mediai.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +11,7 @@ import com.mediai.repository.AIEvaluationRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Service("legacyAIEvaluationService")
 @RequiredArgsConstructor
 @Transactional
 public class AIEvaluationService {
@@ -20,15 +22,13 @@ public class AIEvaluationService {
         return aiEvaluationRepository.save(evaluation);
     }
 
-    public AIEvaluation getEvaluationById(Long id) {
+    public AIEvaluation getEvaluationById(UUID id) {
         return aiEvaluationRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AI evaluation not found."));
     }
 
-    public void deleteEvaluation(Long id) {
+    public void deleteEvaluation(UUID id) {
         AIEvaluation evaluation = getEvaluationById(id);
-        evaluation.setDeleted(true);
-        evaluation.setDeletedAt(java.time.Instant.now());
-        aiEvaluationRepository.save(evaluation);
+        aiEvaluationRepository.delete(evaluation);
     }
 }

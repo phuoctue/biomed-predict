@@ -1,6 +1,7 @@
 package com.mediai.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -45,7 +46,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PatientResponse> getPatient(@PathVariable Long id) {
+    public ApiResponse<PatientResponse> getPatient(@PathVariable UUID id) {
         return ApiResponse.ok("Patient retrieved successfully.", patientService.getPatient(id));
     }
 
@@ -58,19 +59,19 @@ public class PatientController {
 
     @PutMapping("/{id}")
     public ApiResponse<PatientResponse> updatePatient(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdatePatientRequest request) {
         return ApiResponse.ok("Patient updated successfully.", patientService.updatePatient(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deletePatient(@PathVariable Long id) {
+    public ApiResponse<String> deletePatient(@PathVariable UUID id) {
         patientService.deletePatient(id);
         return ApiResponse.ok("Patient deleted successfully.", "deleted");
     }
 
     @GetMapping("/{id}/summary")
-    public ApiResponse<PatientSummaryResponse> getSummary(@PathVariable Long id) {
+    public ApiResponse<PatientSummaryResponse> getSummary(@PathVariable UUID id) {
         return ApiResponse.ok("Patient summary retrieved successfully.", patientService.getSummary(id));
     }
 
@@ -82,7 +83,7 @@ public class PatientController {
     }
 
     @GetMapping("/{id}/ai-history")
-    public ApiResponse<List<PatientEvaluationSummaryResponse>> getAiHistory(@PathVariable Long id) {
+    public ApiResponse<List<PatientEvaluationSummaryResponse>> getAiHistory(@PathVariable UUID id) {
         return ApiResponse.ok("Patient AI history retrieved successfully.", patientService.getAiHistory(id));
     }
 }

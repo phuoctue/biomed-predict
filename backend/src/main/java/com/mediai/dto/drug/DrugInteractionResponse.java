@@ -1,14 +1,15 @@
 package com.mediai.dto.drug;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import com.mediai.entity.DrugInteraction;
 
 public record DrugInteractionResponse(
-        Long id,
-        Long sourceDrugId,
+        UUID id,
+        UUID sourceDrugId,
         String sourceDrugName,
-        Long targetDrugId,
+        UUID targetDrugId,
         String targetDrugName,
         String severity,
         String description,

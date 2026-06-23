@@ -1,6 +1,7 @@
 package com.mediai.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -71,7 +72,7 @@ public class DrugController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<DrugResponse> getDrug(@PathVariable Long id) {
+    public ApiResponse<DrugResponse> getDrug(@PathVariable UUID id) {
         return ApiResponse.ok("Drug retrieved successfully.", drugService.getDrug(id));
     }
 
@@ -83,25 +84,25 @@ public class DrugController {
 
     @PutMapping("/{id}")
     public ApiResponse<DrugResponse> updateDrug(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody DrugRequest request) {
         return ApiResponse.ok("Drug updated successfully.", drugService.updateDrug(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteDrug(@PathVariable Long id) {
+    public ApiResponse<String> deleteDrug(@PathVariable UUID id) {
         drugService.deleteDrug(id);
         return ApiResponse.ok("Drug deleted successfully.", "deleted");
     }
 
     @GetMapping("/{id}/interactions")
-    public ApiResponse<List<DrugInteractionResponse>> getInteractions(@PathVariable Long id) {
+    public ApiResponse<List<DrugInteractionResponse>> getInteractions(@PathVariable UUID id) {
         return ApiResponse.ok("Drug interactions retrieved successfully.", drugService.getInteractions(id));
     }
 
     @PostMapping("/{id}/interactions")
     public ResponseEntity<ApiResponse<DrugInteractionResponse>> createInteraction(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody DrugInteractionRequest request) {
         var payload = new DrugInteractionRequest(
                 id, request.targetDrugId(), request.severity(),
@@ -113,14 +114,14 @@ public class DrugController {
 
     @PutMapping("/interactions/{interactionId}")
     public ApiResponse<DrugInteractionResponse> updateInteraction(
-            @PathVariable Long interactionId,
+            @PathVariable UUID interactionId,
             @Valid @RequestBody DrugInteractionRequest request) {
         return ApiResponse.ok("Drug interaction updated successfully.",
                 drugInteractionService.updateInteraction(interactionId, request));
     }
 
     @DeleteMapping("/interactions/{interactionId}")
-    public ApiResponse<String> deleteInteraction(@PathVariable Long interactionId) {
+    public ApiResponse<String> deleteInteraction(@PathVariable UUID interactionId) {
         drugInteractionService.deleteInteraction(interactionId);
         return ApiResponse.ok("Drug interaction deleted successfully.", "deleted");
     }
@@ -134,7 +135,7 @@ public class DrugController {
 
     @GetMapping("/{id}/alternatives")
     public PageResponse<DrugSummaryResponse> getAlternativeDrugs(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @PageableDefault(size = 20) Pageable pageable) {
         var drug = drugService.getDrug(id);
         return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, pageable);

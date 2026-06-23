@@ -1,5 +1,7 @@
 package com.mediai.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +21,19 @@ public class PrescriptionService {
         return prescriptionRepository.save(prescription);
     }
 
-    public Prescription getPrescriptionById(Long id) {
+    public Prescription getPrescriptionById(UUID id) {
         return prescriptionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Prescription not found"));
     }
 
-    public Prescription updatePrescriptionStatus(Long id, String status) {
+    public Prescription updatePrescriptionStatus(UUID id, String status) {
         Prescription prescription = getPrescriptionById(id);
         prescription.setStatus(status);
         return prescriptionRepository.save(prescription);
     }
 
-    public void deletePrescription(Long id) {
+    public void deletePrescription(UUID id) {
         Prescription prescription = getPrescriptionById(id);
-        prescription.setDeleted(true);
-        prescriptionRepository.save(prescription);
+        prescriptionRepository.delete(prescription);
     }
 }

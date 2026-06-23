@@ -1,5 +1,7 @@
 package com.mediai.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,20 +28,12 @@ public class DiseaseController {
     public ResponseEntity<ApiResponse<Disease>> createDisease(@RequestBody Disease disease) {
         Disease saved = diseaseService.createDisease(disease);
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(ApiResponse.<Disease>builder()
-                .success(true)
-                .message("Disease created successfully")
-                .data(saved)
-                .build());
+            .body(ApiResponse.ok("Disease created successfully", saved));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Disease>> getDisease(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Disease>> getDisease(@PathVariable UUID id) {
         Disease disease = diseaseService.getDiseaseById(id);
-        return ResponseEntity.ok(ApiResponse.<Disease>builder()
-            .success(true)
-            .message("Disease retrieved successfully")
-            .data(disease)
-            .build());
+        return ResponseEntity.ok(ApiResponse.ok("Disease retrieved successfully", disease));
     }
 }

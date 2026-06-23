@@ -14,7 +14,6 @@ import com.mediai.dto.notification.NotificationResponse;
 import com.mediai.entity.Notification;
 import com.mediai.entity.Notification.NotificationStatus;
 import com.mediai.entity.Notification.NotificationType;
-import com.mediai.entity.User;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.NotificationRepository;
 import com.mediai.repository.UserRepository;
@@ -50,19 +49,19 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getNotifications(Long userId, Pageable pageable) {
+    public Page<NotificationResponse> getNotifications(UUID userId, Pageable pageable) {
         return notificationRepository.findByRecipient_Id(userId, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getUnreadNotifications(Long userId, Pageable pageable) {
+    public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
         return notificationRepository.findByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional
-    public NotificationResponse markAsRead(Long notificationId) {
+    public NotificationResponse markAsRead(UUID notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.READ);
         notification.setReadAt(LocalDateTime.now());
@@ -70,23 +69,23 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsArchived(Long notificationId) {
+    public void markAsArchived(UUID notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.ARCHIVED);
         notificationRepository.save(notification);
     }
 
     @Transactional
-    public void deleteNotification(Long notificationId) {
+    public void deleteNotification(UUID notificationId) {
         notificationRepository.deleteById(notificationId);
     }
 
     @Transactional(readOnly = true)
-    public Long getUnreadCount(Long userId) {
+    public Long getUnreadCount(UUID userId) {
         return notificationRepository.countByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD);
     }
 
-    private Notification findNotification(Long id) {
+    private Notification findNotification(UUID id) {
         return notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification not found."));
     }

@@ -10,16 +10,14 @@ import org.springframework.stereotype.Repository;
 
 import com.mediai.entity.Bookmark;
 
-// Bookmark has its own UUID @Id (not from BaseEntity), so JpaRepository<Bookmark, UUID> is correct.
-// However user.id and drug.id are Long (from BaseEntity).
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, UUID> {
 
-    Page<Bookmark> findByUserId(Long userId, Pageable pageable);
+    Page<Bookmark> findByUser_Id(UUID userId, Pageable pageable);
 
-    Optional<Bookmark> findByUserIdAndDrugId(Long userId, Long drugId);
+    Optional<Bookmark> findByUser_IdAndDrug_Id(UUID userId, UUID drugId);
 
-    void deleteByUserIdAndDrugId(Long userId, Long drugId);
+    void deleteByUser_IdAndDrug_Id(UUID userId, UUID drugId);
 
-    boolean existsByUserIdAndDrugId(Long userId, Long drugId);
+    boolean existsByUser_IdAndDrug_Id(UUID userId, UUID drugId);
 }

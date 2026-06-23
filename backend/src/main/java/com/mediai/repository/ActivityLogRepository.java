@@ -11,14 +11,14 @@ import com.mediai.entity.ActivityLog;
 import com.mediai.entity.ActivityLog.ActionType;
 
 @Repository
-public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
-    Page<ActivityLog> findByUser_Id(Long userId, Pageable pageable);
+public interface ActivityLogRepository extends JpaRepository<ActivityLog, UUID> {
+    Page<ActivityLog> findByUser_Id(UUID userId, Pageable pageable);
 
     Page<ActivityLog> findByEntityTypeAndEntityId(String entityType, UUID entityId, Pageable pageable);
 
     Page<ActivityLog> findByActionType(ActionType actionType, Pageable pageable);
 
-    Page<ActivityLog> findByUser_IdAndActionType(Long userId, ActionType actionType, Pageable pageable);
+    Page<ActivityLog> findByUser_IdAndActionType(UUID userId, ActionType actionType, Pageable pageable);
 
-    Page<ActivityLog> findByUser_IdAndEntityType(Long userId, String entityType, Pageable pageable);
+    Page<ActivityLog> findByUser_IdAndEntityType(UUID userId, String entityType, Pageable pageable);
 }

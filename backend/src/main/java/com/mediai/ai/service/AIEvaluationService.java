@@ -6,6 +6,7 @@ import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,14 +68,14 @@ public class AIEvaluationService {
 
     @Transactional
     public AIEvaluationResponse evaluate(AIEvaluationRequest request, UserPrincipal principal) {
-        var patient = findPatient(request.patientId());
-        var drug = findDrug(request.drugId());
+        var patient   = findPatient(request.patientId());
+        var drug      = findDrug(request.drugId());
         var evaluator = findEvaluator(principal);
         var aiPayload = buildPayload(patient, drug, request.dosage(), request.labs());
 
-        var prompt = buildPrompt(aiPayload);
-        var start = System.nanoTime();
-        var aiResponse = aiServiceClient.evaluate(aiPayload);
+        var prompt          = buildPrompt(aiPayload);
+        var start           = System.nanoTime();
+        var aiResponse      = aiServiceClient.evaluate(aiPayload);
         var processingTimeMs = (System.nanoTime() - start) / 1_000_000L;
 
         var evaluation = new AIEvaluation();
@@ -100,39 +101,37 @@ public class AIEvaluationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AIEvaluationSummaryResponse> listEvaluations(Long patientId, Long drugId, Pageable pageable) {
-        Specification<AIEvaluation> specification = AIEvaluationSpecifications.hasPatientId(patientId)
+    public Page<AIEvaluationSummaryResponse> listEvaluations(UUID patientId, UUID drugId, Pageable pageable) {
+        Specification<AIEvaluation> spec = AIEvaluationSpecifications.hasPatientId(patientId)
                 .and(AIEvaluationSpecifications.hasDrugId(drugId));
-
-        return aiEvaluationRepository.findAll(specification, pageable)
-                .map(this::toSummaryResponse);
+        return aiEvaluationRepository.findAll(spec, pageable).map(this::toSummaryResponse);
     }
 
     @Transactional(readOnly = true)
-    public AIEvaluationResponse getEvaluation(Long id) {
+    public AIEvaluationResponse getEvaluation(UUID id) {
         return toResponse(findEvaluation(id), null);
     }
 
     @Transactional(readOnly = true)
-    public AIEvaluationSummaryResponse getSummary(Long id) {
+    public AIEvaluationSummaryResponse getSummary(UUID id) {
         return toSummaryResponse(findEvaluation(id));
     }
 
     @Transactional(readOnly = true)
-    public List<String> getWarnings(Long id) {
+    public List<String> getWarnings(UUID id) {
         return readStringList(findEvaluation(id).getWarningsJson());
     }
 
     @Transactional(readOnly = true)
-    public List<String> getRecommendations(Long id) {
+    public List<String> getRecommendations(UUID id) {
         return readStringList(findEvaluation(id).getAlternativesJson());
     }
 
     @Transactional
-    public AIEvaluationResponse reanalyze(Long id, UserPrincipal principal) {
+    public AIEvaluationResponse reanalyze(UUID id, UserPrincipal principal) {
         var previous = findEvaluation(id);
-        var labs = readStringMap(previous.getLabsJson());
-        var request = new AIEvaluationRequest(
+        var labs     = readStringMap(previous.getLabsJson());
+        var request  = new AIEvaluationRequest(
                 previous.getPatient().getId(),
                 previous.getDrug().getId(),
                 previous.getDosage(),
@@ -145,7 +144,10 @@ public class AIEvaluationService {
         return aiServiceClient.explain(new ExplainRequestPayload(result, targetLanguage));
     }
 
-    private EvaluationRequestPayload buildPayload(Patient patient, Drug drug, String dosage, Map<String, String> labs) {
+    // ── private helpers ──────────────────────────────────────────────────────
+
+    private EvaluationRequestPayload buildPayload(Patient patient, Drug drug,
+            String dosage, Map<String, String> labs) {
         return new EvaluationRequestPayload(
                 patient.getId().toString(),
                 calculateAge(patient.getDateOfBirth()),
@@ -156,60 +158,42 @@ public class AIEvaluationService {
                 labs == null ? Map.of() : labs);
     }
 
-    private AIEvaluationResponse toResponse(AIEvaluation evaluation, EvaluationResponsePayload aiResponse) {
-        var warnings = readStringList(evaluation.getWarningsJson());
-        var alternatives = readStringList(evaluation.getAlternativesJson());
-
-        if (aiResponse != null) {
-            warnings = aiResponse.warnings() == null ? warnings : aiResponse.warnings();
-            alternatives = aiResponse.alternatives() == null ? alternatives : aiResponse.alternatives();
+    private AIEvaluationResponse toResponse(AIEvaluation e, EvaluationResponsePayload ai) {
+        var warnings     = readStringList(e.getWarningsJson());
+        var alternatives = readStringList(e.getAlternativesJson());
+        if (ai != null) {
+            warnings     = ai.warnings()     == null ? warnings     : ai.warnings();
+            alternatives = ai.alternatives() == null ? alternatives : ai.alternatives();
         }
-
         return new AIEvaluationResponse(
-                evaluation.getId(),
-                evaluation.getPatient().getId(),
-                evaluation.getPatient().getFullName(),
-                evaluation.getDrug().getId(),
-                evaluation.getDrug().getName(),
-                evaluation.getDosage(),
-                evaluation.getModelName(),
-                evaluation.getModelVersion(),
-                evaluation.getSuitabilityScore(),
-                evaluation.getConfidenceScore(),
-                evaluation.getRiskLevel(),
-                evaluation.getSummary(),
-                warnings,
-                alternatives,
-                evaluation.getRawExplanation(),
-                evaluation.getProcessingTimeMs(),
-                evaluation.getCreatedAt());
+                e.getId(), e.getPatient().getId(), e.getPatient().getFullName(),
+                e.getDrug().getId(), e.getDrug().getName(), e.getDosage(),
+                e.getModelName(), e.getModelVersion(),
+                e.getSuitabilityScore(), e.getConfidenceScore(),
+                e.getRiskLevel(), e.getSummary(),
+                warnings, alternatives, e.getRawExplanation(),
+                e.getProcessingTimeMs(), e.getCreatedAt());
     }
 
-    private AIEvaluationSummaryResponse toSummaryResponse(AIEvaluation evaluation) {
+    private AIEvaluationSummaryResponse toSummaryResponse(AIEvaluation e) {
         return new AIEvaluationSummaryResponse(
-                evaluation.getId(),
-                evaluation.getPatient().getId(),
-                evaluation.getPatient().getFullName(),
-                evaluation.getDrug().getId(),
-                evaluation.getDrug().getName(),
-                evaluation.getSuitabilityScore(),
-                evaluation.getConfidenceScore(),
-                evaluation.getRiskLevel(),
-                evaluation.getSummary(),
-                evaluation.getCreatedAt());
+                e.getId(), e.getPatient().getId(), e.getPatient().getFullName(),
+                e.getDrug().getId(), e.getDrug().getName(),
+                e.getSuitabilityScore(), e.getConfidenceScore(),
+                e.getRiskLevel(), e.getSummary(), e.getCreatedAt());
     }
 
-    private AIEvaluation findEvaluation(Long id) {
+    private AIEvaluation findEvaluation(UUID id) {
         return aiEvaluationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AI evaluation not found."));
     }
 
-    private Patient findPatient(Long id) {
+    private Patient findPatient(UUID id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found."));
     }
 
-    private Drug findDrug(Long id) {
+    private Drug findDrug(UUID id) {
         return drugRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug not found."));
     }
@@ -219,31 +203,26 @@ public class AIEvaluationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Evaluator account not found."));
     }
 
-    private Integer calculateAge(LocalDate dateOfBirth) {
-        if (dateOfBirth == null) return null;
-        return Period.between(dateOfBirth, LocalDate.now()).getYears();
+    private Integer calculateAge(LocalDate dob) {
+        return dob == null ? null : Period.between(dob, LocalDate.now()).getYears();
     }
 
     private List<String> parseAllergies(String allergies) {
         if (allergies == null || allergies.isBlank()) return List.of();
         return List.of(allergies.split("[,;\\n]+")).stream()
-                .map(String::trim)
-                .filter(v -> !v.isBlank())
-                .toList();
+                .map(String::trim).filter(v -> !v.isBlank()).toList();
     }
 
-    private String firstNonBlank(String primary, String fallback) {
-        return primary != null && !primary.isBlank() ? primary : fallback;
+    private String firstNonBlank(String a, String b) {
+        return a != null && !a.isBlank() ? a : b;
     }
 
-    private String normalizeRiskLevel(String riskLevel) {
-        if (riskLevel == null || riskLevel.isBlank()) return "moderate";
-        return riskLevel.trim().toLowerCase();
+    private String normalizeRiskLevel(String r) {
+        return r == null || r.isBlank() ? "moderate" : r.trim().toLowerCase();
     }
 
-    private Integer estimateConfidence(Integer suitabilityScore) {
-        if (suitabilityScore == null) return null;
-        return Math.max(55, Math.min(95, suitabilityScore - 4));
+    private Integer estimateConfidence(Integer score) {
+        return score == null ? null : Math.max(55, Math.min(95, score - 4));
     }
 
     private String buildPrompt(EvaluationRequestPayload payload) {
@@ -251,28 +230,19 @@ public class AIEvaluationService {
     }
 
     private String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Unable to serialize AI payload.", e);
-        }
+        try { return objectMapper.writeValueAsString(value); }
+        catch (JsonProcessingException e) { throw new IllegalStateException("Serialization error", e); }
     }
 
     private List<String> readStringList(String json) {
         if (json == null || json.isBlank()) return List.of();
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        } catch (IOException e) {
-            return List.of();
-        }
+        try { return objectMapper.readValue(json, new TypeReference<>() {}); }
+        catch (IOException e) { return List.of(); }
     }
 
     private Map<String, String> readStringMap(String json) {
         if (json == null || json.isBlank()) return Map.of();
-        try {
-            return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {});
-        } catch (IOException e) {
-            return Collections.emptyMap();
-        }
+        try { return objectMapper.readValue(json, new TypeReference<>() {}); }
+        catch (IOException e) { return Collections.emptyMap(); }
     }
 }

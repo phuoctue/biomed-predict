@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.mediai.entity.PatientDrug;
 
-// PatientDrug uses its own UUID @Id (not BaseEntity), so UUID is correct here.
 public interface PatientDrugRepository extends JpaRepository<PatientDrug, UUID> {
-    List<PatientDrug> findByPatient_Id(Long patientId);
+
+    List<PatientDrug> findByPatient_Id(UUID patientId);
+
+    List<PatientDrug> findByPatient_IdAndStatus(UUID patientId, String status);
 }

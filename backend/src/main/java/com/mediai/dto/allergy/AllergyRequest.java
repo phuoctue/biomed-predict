@@ -1,11 +1,13 @@
 package com.mediai.dto.allergy;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.NotBlank;
 
 public record AllergyRequest(
-        Long patientId,
-        Long drugId,
-        Long ingredientId,
+        UUID patientId,
+        UUID drugId,
+        UUID ingredientId,
         @NotBlank String severity,
         String reaction,
         String notes) {

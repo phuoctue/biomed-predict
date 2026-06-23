@@ -1,5 +1,7 @@
 package com.mediai.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +42,7 @@ public class LabResultController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<LabResult>> getLabResult(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<LabResult>> getLabResult(@PathVariable UUID id) {
         LabResult labResult = labResultService.getLabResultById(id);
         return ResponseEntity.ok(ApiResponse.ok("Lab result retrieved successfully.", labResult));
     }

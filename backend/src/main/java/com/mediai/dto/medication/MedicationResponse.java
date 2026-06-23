@@ -6,12 +6,11 @@ import java.util.UUID;
 
 import com.mediai.entity.PatientDrug;
 
-// PatientDrug.id is UUID (its own @Id), Patient.id and Drug.id are Long (from BaseEntity)
 public record MedicationResponse(
         UUID id,
-        Long patientId,
+        UUID patientId,
         String patientName,
-        Long drugId,
+        UUID drugId,
         String drugName,
         String dosage,
         String frequency,

@@ -1,9 +1,10 @@
 package com.mediai.ai.controller;
 
 import java.util.List;
+import java.util.UUID;
 
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,50 +55,40 @@ public class AIEvaluationController {
 
     @GetMapping("/evaluations")
     public PageResponse<AIEvaluationSummaryResponse> listEvaluations(
-            @RequestParam(required = false) Long patientId,
-            @RequestParam(required = false) Long drugId,
+            @RequestParam(required = false) UUID patientId,
+            @RequestParam(required = false) UUID drugId,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = aiEvaluationService.listEvaluations(patientId, drugId, pageable);
-        return PageResponse.ok(
-                "AI evaluations retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("AI evaluations retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(),
+                page.isFirst(), page.isLast());
     }
 
     @GetMapping("/evaluations/{id}")
-    public ApiResponse<AIEvaluationResponse> getEvaluation(@PathVariable Long id) {
-        return ApiResponse.ok("AI evaluation retrieved successfully.",
-                aiEvaluationService.getEvaluation(id));
+    public ApiResponse<AIEvaluationResponse> getEvaluation(@PathVariable UUID id) {
+        return ApiResponse.ok("AI evaluation retrieved successfully.", aiEvaluationService.getEvaluation(id));
     }
 
     @GetMapping("/evaluations/{id}/summary")
-    public ApiResponse<AIEvaluationSummaryResponse> getSummary(@PathVariable Long id) {
-        return ApiResponse.ok("AI evaluation summary retrieved successfully.",
-                aiEvaluationService.getSummary(id));
+    public ApiResponse<AIEvaluationSummaryResponse> getSummary(@PathVariable UUID id) {
+        return ApiResponse.ok("AI evaluation summary retrieved successfully.", aiEvaluationService.getSummary(id));
     }
 
     @GetMapping("/evaluations/{id}/warnings")
-    public ApiResponse<List<String>> getWarnings(@PathVariable Long id) {
-        return ApiResponse.ok("AI warnings retrieved successfully.",
-                aiEvaluationService.getWarnings(id));
+    public ApiResponse<List<String>> getWarnings(@PathVariable UUID id) {
+        return ApiResponse.ok("AI warnings retrieved successfully.", aiEvaluationService.getWarnings(id));
     }
 
     @GetMapping("/evaluations/{id}/recommendations")
-    public ApiResponse<List<String>> getRecommendations(@PathVariable Long id) {
-        return ApiResponse.ok("AI recommendations retrieved successfully.",
-                aiEvaluationService.getRecommendations(id));
+    public ApiResponse<List<String>> getRecommendations(@PathVariable UUID id) {
+        return ApiResponse.ok("AI recommendations retrieved successfully.", aiEvaluationService.getRecommendations(id));
     }
 
     @PostMapping("/evaluations/{id}/reanalyze")
     public ApiResponse<AIEvaluationResponse> reanalyze(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal) {
-        return ApiResponse.ok("AI re-evaluation completed successfully.",
-                aiEvaluationService.reanalyze(id, principal));
+        return ApiResponse.ok("AI re-evaluation completed successfully.", aiEvaluationService.reanalyze(id, principal));
     }
 }

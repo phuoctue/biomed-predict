@@ -1,16 +1,17 @@
 package com.mediai.dto.allergy;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import com.mediai.entity.PatientAllergy;
 
 public record AllergyResponse(
-        Long id,
-        Long patientId,
+        UUID id,
+        UUID patientId,
         String patientName,
-        Long drugId,
+        UUID drugId,
         String drugName,
-        Long ingredientId,
+        UUID ingredientId,
         String ingredientName,
         String severity,
         String reaction,

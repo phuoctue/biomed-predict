@@ -2,11 +2,12 @@ package com.mediai.dto.patient;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import com.mediai.entity.Patient;
 
 public record PatientResponse(
-        Long id,
+        UUID id,
         String mrn,
         String fullName,
         LocalDate dateOfBirth,

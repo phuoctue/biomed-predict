@@ -1,6 +1,7 @@
 package com.mediai.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -43,7 +44,7 @@ public class IngredientController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<IngredientResponse> getIngredient(@PathVariable Long id) {
+    public ApiResponse<IngredientResponse> getIngredient(@PathVariable UUID id) {
         return ApiResponse.ok("Ingredient retrieved successfully.", ingredientService.getIngredient(id));
     }
 
@@ -57,20 +58,20 @@ public class IngredientController {
 
     @PutMapping("/{id}")
     public ApiResponse<IngredientResponse> updateIngredient(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody IngredientRequest request) {
         return ApiResponse.ok("Ingredient updated successfully.",
                 ingredientService.updateIngredient(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<String> deleteIngredient(@PathVariable Long id) {
+    public ApiResponse<String> deleteIngredient(@PathVariable UUID id) {
         ingredientService.deleteIngredient(id);
         return ApiResponse.ok("Ingredient deleted successfully.", "deleted");
     }
 
     @GetMapping("/{id}/drugs")
-    public ApiResponse<List<DrugSummaryResponse>> getDrugsByIngredient(@PathVariable Long id) {
+    public ApiResponse<List<DrugSummaryResponse>> getDrugsByIngredient(@PathVariable UUID id) {
         return ApiResponse.ok("Drugs retrieved successfully.",
                 ingredientService.getDrugsByIngredient(id));
     }

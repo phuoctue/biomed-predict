@@ -1,5 +1,7 @@
 package com.mediai.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +42,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<PrescriptionResponse>> getPrescription(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<PrescriptionResponse>> getPrescription(@PathVariable UUID id) {
         Prescription prescription = prescriptionService.getPrescriptionById(id);
         return ResponseEntity.ok(
                 ApiResponse.ok("Prescription retrieved successfully.", toResponse(prescription)));

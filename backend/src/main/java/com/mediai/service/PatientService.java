@@ -1,6 +1,7 @@
 package com.mediai.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +49,7 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public PatientResponse getPatient(Long id) {
+    public PatientResponse getPatient(UUID id) {
         return PatientResponse.from(findPatient(id));
     }
 
@@ -67,7 +68,7 @@ public class PatientService {
     }
 
     @Transactional
-    public PatientResponse updatePatient(Long id, UpdatePatientRequest request) {
+    public PatientResponse updatePatient(UUID id, UpdatePatientRequest request) {
         var patient = findPatient(id);
         validateUniqueIdentifiers(request.mrn(), request.citizenId(), id);
 
@@ -81,13 +82,13 @@ public class PatientService {
     }
 
     @Transactional
-    public void deletePatient(Long id) {
+    public void deletePatient(UUID id) {
         var patient = findPatient(id);
         patientRepository.delete(patient);
     }
 
     @Transactional(readOnly = true)
-    public PatientSummaryResponse getSummary(Long id) {
+    public PatientSummaryResponse getSummary(UUID id) {
         var patient = findPatient(id);
         var history = aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
@@ -97,7 +98,7 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public List<PatientEvaluationSummaryResponse> getAiHistory(Long id) {
+    public List<PatientEvaluationSummaryResponse> getAiHistory(UUID id) {
         return aiEvaluationRepository.findByPatient_IdOrderByCreatedAtDesc(id).stream()
                 .map(PatientEvaluationSummaryResponse::from)
                 .toList();
@@ -146,12 +147,12 @@ public class PatientService {
         return new ClinicalSummaryResponse(patient.getMrn(), patient.getFullName(), conditions, egfr, bp);
     }
 
-    private Patient findPatient(Long id) {
+    private Patient findPatient(UUID id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found."));
     }
 
-    private void validateUniqueIdentifiers(String mrn, String citizenId, Long currentId) {
+    private void validateUniqueIdentifiers(String mrn, String citizenId, UUID currentId) {
         var existingByMrn = patientRepository.findByMrnIgnoreCase(mrn);
         if (existingByMrn.isPresent() && (currentId == null || !existingByMrn.get().getId().equals(currentId))) {
             throw new IllegalArgumentException("MRN already exists.");

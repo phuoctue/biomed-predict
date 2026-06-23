@@ -1,5 +1,7 @@
 package com.mediai.service;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +21,13 @@ public class LabResultService {
         return labResultRepository.save(labResult);
     }
 
-    public LabResult getLabResultById(Long id) {
+    public LabResult getLabResultById(UUID id) {
         return labResultRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Lab result not found"));
     }
 
-    public void deleteLabResult(Long id) {
+    public void deleteLabResult(UUID id) {
         LabResult labResult = getLabResultById(id);
-        labResult.setDeleted(true);
-        labResultRepository.save(labResult);
+        labResultRepository.delete(labResult);
     }
 }

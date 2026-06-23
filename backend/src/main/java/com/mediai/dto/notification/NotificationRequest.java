@@ -10,7 +10,7 @@ public record NotificationRequest(
         @JsonProperty("title") @NotBlank(message = "Title is required") String title,
         @JsonProperty("message") @NotBlank(message = "Message is required") String message,
         @JsonProperty("type") @NotBlank(message = "Type is required") String type,
-        @JsonProperty("recipientId") Long recipientId,
+        @JsonProperty("recipientId") UUID recipientId,
         @JsonProperty("relatedEntityType") String relatedEntityType,
         @JsonProperty("relatedEntityId") UUID relatedEntityId,
         @JsonProperty("actionUrl") String actionUrl) {

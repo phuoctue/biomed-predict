@@ -53,7 +53,7 @@ public class ActivityLogController {
 
     @GetMapping("/by-user")
     public PageResponse<ActivityLogResponse> getActivityLogsByUser(
-            @RequestParam Long userId,
+            @RequestParam UUID userId,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUser(userId, pageable);
         return PageResponse.ok("Activity logs retrieved successfully.",
@@ -84,7 +84,7 @@ public class ActivityLogController {
 
     @GetMapping("/by-user-and-action")
     public PageResponse<ActivityLogResponse> getActivityLogsByUserAndActionType(
-            @RequestParam Long userId,
+            @RequestParam UUID userId,
             @RequestParam String actionType,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUserAndActionType(userId, actionType, pageable);
@@ -95,7 +95,7 @@ public class ActivityLogController {
 
     @GetMapping("/by-user-and-entity")
     public PageResponse<ActivityLogResponse> getActivityLogsByUserAndEntity(
-            @RequestParam Long userId,
+            @RequestParam UUID userId,
             @RequestParam String entityType,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUserAndEntity(userId, entityType, pageable);

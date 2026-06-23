@@ -1,5 +1,7 @@
 package com.mediai.dto.user.response;
 
+import java.util.UUID;
+
 import lombok.Data;
 
 @Data
@@ -11,7 +13,7 @@ public class LoginResponse {
 
     @Data
     public static class UserDto {
-        private Long id;
+        private UUID id;
         private String username;
         private String fullName;
         private String email;
