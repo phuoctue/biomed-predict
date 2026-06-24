@@ -21,7 +21,7 @@ public interface AIEvaluationRepository extends JpaRepository<AIEvaluation, UUID
 
     AIEvaluation findTopByPatient_IdOrderByCreatedAtDesc(UUID patientId);
 
-    long countByRiskLevel(String riskLevel);
+    long countByRiskLevelIgnoreCase(String riskLevel);
 
     @Query(value = "SELECT e.id::text, p.full_name AS \"patientName\", e.created_at AS \"date\", e.risk_level AS \"riskLevel\" " +
                    "FROM evaluations e " +

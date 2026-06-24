@@ -20,17 +20,26 @@ import com.mediai.entity.Patient;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.AIEvaluationRepository;
 import com.mediai.repository.PatientRepository;
+import com.mediai.repository.LabResultRepository;
+import com.mediai.entity.LabResult;
 import com.mediai.specification.PatientSpecifications;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.time.Period;
+import java.time.LocalDate;
 
 @Service
 public class PatientService {
 
     private final PatientRepository patientRepository;
     private final AIEvaluationRepository aiEvaluationRepository;
+    private final LabResultRepository labResultRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public PatientService(PatientRepository patientRepository, AIEvaluationRepository aiEvaluationRepository) {
+    public PatientService(PatientRepository patientRepository, AIEvaluationRepository aiEvaluationRepository, LabResultRepository labResultRepository, JdbcTemplate jdbcTemplate) {
         this.patientRepository = patientRepository;
         this.aiEvaluationRepository = aiEvaluationRepository;
+        this.labResultRepository = labResultRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +93,24 @@ public class PatientService {
     @Transactional
     public void deletePatient(UUID id) {
         var patient = findPatient(id);
+        
+        // Delete deep dependencies to avoid foreign key constraints
+        jdbcTemplate.update("DELETE FROM lab_results WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM prescription_items WHERE prescription_id IN (SELECT id FROM prescriptions WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?))", id);
+        jdbcTemplate.update("DELETE FROM prescriptions WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM vital_signs WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM medical_records WHERE patient_id = ?", id);
+        
+        jdbcTemplate.update("DELETE FROM ai_evaluation_items WHERE evaluation_id IN (SELECT id FROM ai_evaluations WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM ai_warnings WHERE evaluation_id IN (SELECT id FROM ai_evaluations WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM ai_evaluations WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM evaluations WHERE patient_id = ?", id);
+        
+        jdbcTemplate.update("DELETE FROM patient_drugs WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM patient_allergies WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM patient_diseases WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM emergency_contacts WHERE patient_id = ?", id);
+        
         patientRepository.delete(patient);
     }
 
@@ -144,7 +171,22 @@ public class PatientService {
             }
         }
 
-        return new ClinicalSummaryResponse(patient.getMrn(), patient.getFullName(), conditions, egfr, bp);
+        Integer age = patient.getDateOfBirth() != null ? Period.between(patient.getDateOfBirth(), LocalDate.now()).getYears() : null;
+        LabResult lab = labResultRepository.findTopByMedicalRecord_Patient_IdOrderByCreatedAtDesc(patient.getId());
+        String latestTest = (lab != null) ? (lab.getTestName() + ": " + lab.getResultValue() + (lab.getUnit() != null && !lab.getUnit().isBlank() ? " " + lab.getUnit() : "")) : "Chưa có xét nghiệm gần đây";
+
+        return new ClinicalSummaryResponse(
+                patient.getMrn(),
+                patient.getFullName(),
+                conditions,
+                egfr,
+                bp,
+                patient.getSex(),
+                age,
+                patient.getHeightCm(),
+                patient.getWeightKg(),
+                latestTest
+        );
     }
 
     private Patient findPatient(UUID id) {

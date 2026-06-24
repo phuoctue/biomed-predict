@@ -1,31 +1,37 @@
-import { useState, useEffect, useCallback } from "react";
-import { fetchDrugs, Drug } from "@/services/drug.service";
+import { useQuery } from "@tanstack/react-query";
+import { fetchDrugs, type Drug } from "@/services/drug.service";
 
-// Thêm searchQuery vào tham số truyền vào
-export const useDrugs = (page: number, searchQuery: string) => {
-  const [drugs, setDrugs] = useState<Drug[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // Giả định hàm fetchDrugs của bạn chấp nhận thêm tham số search
-      const res = await fetchDrugs({ page, size: 10, search: searchQuery });
-      setDrugs(res.data);
-      setTotal(res.totalElements);
-      setTotalPages(Math.ceil(res.totalElements / 10));
-    } catch (error) {
-      console.error("Lỗi:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, searchQuery]); // <-- Phụ thuộc vào cả searchQuery
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  return { drugs, loading, total, refetch: loadData, totalPages };
+export const drugKeys = {
+  list: (params: { page: number; searchQuery: string; drugGroup?: string; ingredient?: string; status?: string; advanced?: boolean }) =>
+    ["drugs", params] as const,
 };
+
+export const useDrugs = (
+  page: number,
+  searchQuery: string,
+  filters?: { drugGroup?: string; ingredient?: string; status?: string; advanced?: boolean }
+) => {
+  const query = useQuery({
+    queryKey: drugKeys.list({ page, searchQuery, ...filters }),
+    queryFn: async () =>
+      fetchDrugs({
+        page,
+        size: 10,
+        search: searchQuery,
+        drugGroup: filters?.drugGroup,
+        ingredient: filters?.ingredient,
+        status: filters?.status,
+        advanced: filters?.advanced,
+      }),
+  });
+
+  return {
+    drugs: query.data?.data ?? [],
+    loading: query.isLoading,
+    total: query.data?.totalElements ?? 0,
+    totalPages: query.data?.totalPages ?? 0,
+    refetch: query.refetch,
+  };
+};
+
+export type { Drug };

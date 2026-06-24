@@ -1,7 +1,7 @@
 spring:
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/mediai_db}
-    username: ${POSTGRES_USER:mediai}
+    username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:mediai123}
     driver-class-name: org.postgresql.Driver
     hikari:
@@ -10,7 +10,7 @@ spring:
       connection-timeout: ${DB_POOL_CONNECTION_TIMEOUT_MS:30000}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:

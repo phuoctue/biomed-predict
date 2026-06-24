@@ -1,16 +1,10 @@
-import { useState, type FormEvent } from "react";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useEffect, useState, type FormEvent } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { X, Pill, Tag, FileText, List, Package, Building2, ShieldAlert, Sparkles } from "lucide-react";
+import { Building2, FileText, List, Package, Pill, ShieldAlert, Sparkles, Tag, X } from "lucide-react";
 import { drugAPI } from "@/services/api";
 
-type AddDrugModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreated?: () => void;
-};
-
-type DrugFormState = {
+export type DrugFormState = {
   code: string;
   name: string;
   genericName: string;
@@ -26,7 +20,7 @@ type DrugFormState = {
   status: string;
 };
 
-const initialForm: DrugFormState = {
+const emptyForm: DrugFormState = {
   code: "",
   name: "",
   genericName: "",
@@ -47,14 +41,38 @@ const inputClass =
 
 const iconWrapClass = "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400";
 
-export const AddDrugModal = ({ isOpen, onClose, onCreated }: AddDrugModalProps) => {
-  const [form, setForm] = useState<DrugFormState>(initialForm);
+type DrugModalProps = {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  drugId?: string;
+  initialValues?: Partial<DrugFormState>;
+  onClose: () => void;
+  onSuccess?: () => void;
+};
+
+export const DrugModal = ({ isOpen, mode, drugId, initialValues, onClose, onSuccess }: DrugModalProps) => {
+  const [form, setForm] = useState<DrugFormState>(emptyForm);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  const createDrug = useMutation({
+  useEffect(() => {
+    if (isOpen) {
+      setForm({ ...emptyForm, ...initialValues, status: initialValues?.status || "ACTIVE" });
+      setError("");
+    }
+  }, [isOpen, initialValues]);
+
+  const saveDrug = useMutation({
     mutationFn: async (payload: DrugFormState) => {
-      await drugAPI.create(payload);
+      if (mode === "create") {
+        await drugAPI.create(payload);
+        return;
+      }
+
+      if (!drugId) {
+        throw new Error("Drug id is missing.");
+      }
+      await drugAPI.update(drugId, payload);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["drugs"] });
@@ -68,7 +86,7 @@ export const AddDrugModal = ({ isOpen, onClose, onCreated }: AddDrugModalProps) 
   };
 
   const resetAndClose = () => {
-    setForm(initialForm);
+    setForm(emptyForm);
     setError("");
     onClose();
   };
@@ -78,29 +96,35 @@ export const AddDrugModal = ({ isOpen, onClose, onCreated }: AddDrugModalProps) 
     setError("");
 
     try {
-      await createDrug.mutateAsync({
+      await saveDrug.mutateAsync({
         ...form,
         status: form.status || "ACTIVE",
       });
-      onCreated?.();
+      onSuccess?.();
       resetAndClose();
     } catch (err: unknown) {
       const message = axios.isAxiosError(err)
         ? err.response?.data?.message || err.response?.data?.error || err.message
         : err instanceof Error
           ? err.message
-          : "Không thể thêm thuốc mới.";
+          : mode === "create"
+            ? "Không thể thêm thuốc mới."
+            : "Không thể cập nhật thuốc.";
       setError(message);
     }
   };
+
+  const title = mode === "create" ? "Thêm thuốc mới" : "Sửa thông tin thuốc";
+  const subtitle = mode === "create" ? "Tạo nhanh thuốc mới cho kho danh mục." : "Cập nhật thông tin thuốc đang có.";
+  const submitLabel = mode === "create" ? "Thêm thuốc" : "Lưu thay đổi";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-[2px]">
       <div className="animate-in fade-in zoom-in duration-200 w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Thêm thuốc mới</h2>
-            <p className="mt-1 text-sm text-slate-500">Tạo nhanh thuốc mới cho kho danh mục.</p>
+            <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
           </div>
           <button
             type="button"
@@ -116,7 +140,6 @@ export const AddDrugModal = ({ isOpen, onClose, onCreated }: AddDrugModalProps) 
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* same fields as before */}
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Mã thuốc</label>
               <div className="relative">
@@ -212,8 +235,8 @@ export const AddDrugModal = ({ isOpen, onClose, onCreated }: AddDrugModalProps) 
             <button type="button" onClick={resetAndClose} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-600 transition hover:bg-slate-200">
               Hủy
             </button>
-            <button type="submit" disabled={createDrug.isPending} className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70">
-              {createDrug.isPending ? "Đang thêm..." : "Thêm thuốc"}
+            <button type="submit" disabled={saveDrug.isPending} className="flex-1 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70">
+              {saveDrug.isPending ? "Đang lưu..." : submitLabel}
             </button>
           </div>
         </form>

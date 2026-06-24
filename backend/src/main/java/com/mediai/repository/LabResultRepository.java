@@ -9,4 +9,5 @@ import com.mediai.entity.LabResult;
 
 @Repository
 public interface LabResultRepository extends JpaRepository<LabResult, UUID> {
+    LabResult findTopByMedicalRecord_Patient_IdOrderByCreatedAtDesc(UUID patientId);
 }

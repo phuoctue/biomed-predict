@@ -35,6 +35,8 @@ import com.mediai.repository.AIEvaluationRepository;
 import com.mediai.repository.DrugRepository;
 import com.mediai.repository.PatientRepository;
 import com.mediai.repository.UserRepository;
+import com.mediai.repository.LabResultRepository;
+import com.mediai.entity.LabResult;
 import com.mediai.security.UserPrincipal;
 import com.mediai.specification.AIEvaluationSpecifications;
 
@@ -45,6 +47,7 @@ public class AIEvaluationService {
     private final PatientRepository patientRepository;
     private final DrugRepository drugRepository;
     private final UserRepository userRepository;
+    private final LabResultRepository labResultRepository;
     private final AiServiceClient aiServiceClient;
     private final AiServiceProperties aiServiceProperties;
     private final ObjectMapper objectMapper;
@@ -54,6 +57,7 @@ public class AIEvaluationService {
             PatientRepository patientRepository,
             DrugRepository drugRepository,
             UserRepository userRepository,
+            LabResultRepository labResultRepository,
             AiServiceClient aiServiceClient,
             AiServiceProperties aiServiceProperties,
             ObjectMapper objectMapper) {
@@ -61,6 +65,7 @@ public class AIEvaluationService {
         this.patientRepository = patientRepository;
         this.drugRepository = drugRepository;
         this.userRepository = userRepository;
+        this.labResultRepository = labResultRepository;
         this.aiServiceClient = aiServiceClient;
         this.aiServiceProperties = aiServiceProperties;
         this.objectMapper = objectMapper;
@@ -149,6 +154,16 @@ public class AIEvaluationService {
 
     private EvaluationRequestPayload buildPayload(Patient patient, Drug drug,
             String dosage, Map<String, String> labs) {
+        var enrichedLabs = new java.util.HashMap<>(labs == null ? Map.<String, String>of() : labs);
+        enrichedLabs.putIfAbsent("sex", patient.getSex() != null ? patient.getSex() : "Unknown");
+        enrichedLabs.putIfAbsent("height", patient.getHeightCm() != null ? String.valueOf(patient.getHeightCm()) : "Unknown");
+        enrichedLabs.putIfAbsent("weight", patient.getWeightKg() != null ? String.valueOf(patient.getWeightKg()) : "Unknown");
+        enrichedLabs.putIfAbsent("age", String.valueOf(calculateAge(patient.getDateOfBirth())));
+
+        LabResult lab = labResultRepository.findTopByMedicalRecord_Patient_IdOrderByCreatedAtDesc(patient.getId());
+        String latestTest = (lab != null) ? (lab.getTestName() + ": " + lab.getResultValue() + (lab.getUnit() != null && !lab.getUnit().isBlank() ? " " + lab.getUnit() : "")) : "Chưa có xét nghiệm gần đây";
+        enrichedLabs.putIfAbsent("latestTest", latestTest);
+
         return new EvaluationRequestPayload(
                 patient.getId().toString(),
                 calculateAge(patient.getDateOfBirth()),
@@ -156,7 +171,7 @@ public class AIEvaluationService {
                 drug.getName(),
                 firstNonBlank(dosage, firstNonBlank(drug.getRecommendedDose(), drug.getStrength())),
                 parseAllergies(patient.getAllergies()),
-                labs == null ? Map.of() : labs);
+                enrichedLabs);
     }
 
     private AIEvaluationResponse toResponse(AIEvaluation e, EvaluationResponsePayload ai) {

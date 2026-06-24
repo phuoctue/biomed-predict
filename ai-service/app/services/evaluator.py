@@ -10,13 +10,27 @@ logger = logging.getLogger(__name__)
 async def evaluate_medication(payload: EvaluationRequest) -> EvaluationResponse:
     logger.info(f"=== Starting evaluation for drug: {payload.drug_name} ===")
     logger.info(f"Patient age: {payload.patient_age}, Diagnosis: {payload.diagnosis}")
+    labs = payload.labs or {}
+    sex = labs.get("sex") or "Unknown"
+    height = labs.get("height") or "Unknown"
+    weight = labs.get("weight") or "Unknown"
+    latest_test = labs.get("latestTest") or labs.get("latest_test") or "None listed"
+    egfr = labs.get("egfr") or "Unknown"
+    bp = labs.get("bloodPressure") or labs.get("blood_pressure") or "Unknown"
+
     # Build detailed prompt for LLM
     prompt = f"""You are an expert clinical pharmacist AI assistant. Analyze this medication for a patient and provide a structured evaluation.
 
 Patient Information:
 - Age: {payload.patient_age or 'Unknown'}
+- Sex: {sex}
+- Height: {height} cm
+- Weight: {weight} kg
 - Diagnosis: {payload.diagnosis}
 - Allergies: {', '.join(payload.allergies) if payload.allergies else 'None'}
+- Latest Test/Lab Results: {latest_test}
+- eGFR: {egfr} mL/min
+- Blood Pressure: {bp}
 - Current Medications: None listed
 
 Medication to Evaluate:
@@ -39,7 +53,7 @@ Format your response as JSON:
   "alternatives": ["<alternative 1>", "<alternative 2>", ...]
 }}
 
-Be specific to this patient's age, diagnosis, and allergies. Consider drug interactions, contraindications, and age-related factors."""
+Be specific to this patient's age, sex, height, weight, diagnosis, lab results, and allergies. Consider drug interactions, contraindications, and age-related factors."""
 
     # Call LLM
     logger.info("Calling LLM with prompt...")

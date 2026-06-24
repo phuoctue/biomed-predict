@@ -6,13 +6,15 @@ interface DrugsTableProps {
   page: number;
   totalPages: number;
   setPage: (page: number) => void;
+  onEdit?: (drug: Drug) => void;
+  onDelete?: (drug: Drug) => void;
 }
 
-export const DrugsTable = ({ drugs, page, totalPages, setPage }: DrugsTableProps) => {
+export const DrugsTable = ({ drugs, page, totalPages, setPage, onEdit, onDelete }: DrugsTableProps) => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <table className="w-full text-left">
-        <thead className="bg-slate-50 text-slate-400 text-[10px] uppercase tracking-widest font-bold">
+        <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
           <tr>
             <th className="p-4">Tên thuốc</th>
             <th className="p-4">Hoạt chất</th>
@@ -26,34 +28,48 @@ export const DrugsTable = ({ drugs, page, totalPages, setPage }: DrugsTableProps
         <tbody className="divide-y divide-slate-100">
           {drugs.length > 0 ? (
             drugs.map((d) => (
-              <tr key={d.id} className="hover:bg-slate-50 transition-colors duration-200">
-                <td className="p-4 font-bold text-sm text-slate-800">{d.name}</td>
-                <td className="p-4 text-slate-500 text-sm">{d.genericName || "—"}</td>
-                <td className="p-4 text-slate-500 text-sm font-mono">{d.code}</td>
-                <td className="p-4 text-slate-500 text-sm">{d.drugGroup || "—"}</td>
-                <td className="p-4 text-slate-500 text-sm">{d.strength || "—"}</td>
+              <tr key={d.id} className="transition-colors duration-200 hover:bg-slate-50">
+                <td className="p-4 text-sm font-bold text-slate-800">{d.name}</td>
+                <td className="p-4 text-sm text-slate-500">{d.genericName || "—"}</td>
+                <td className="p-4 font-mono text-sm text-slate-500">{d.code}</td>
+                <td className="p-4 text-sm text-slate-500">{d.drugGroup || "—"}</td>
+                <td className="p-4 text-sm text-slate-500">{d.strength || "—"}</td>
                 <td className="p-4">
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    d.status === "ACTIVE"
-                      ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                      : "bg-slate-100 text-slate-500"
-                  }`}>
+                  <span
+                    className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                      d.status === "ACTIVE"
+                        ? "border-emerald-100 bg-emerald-50 text-emerald-600"
+                        : "border-slate-200 bg-slate-100 text-slate-500"
+                    }`}
+                  >
                     {d.status === "ACTIVE" ? "Đang dùng" : d.status || "—"}
                   </span>
                 </td>
-                <td className="p-4 flex justify-center gap-2">
-                  <button className="text-slate-400 hover:text-blue-600 p-1 rounded hover:bg-blue-50 transition-all">
-                    <Pencil size={16} />
-                  </button>
-                  <button className="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-all">
-                    <Trash2 size={16} />
-                  </button>
+                <td className="p-4">
+                  <div className="flex justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onEdit?.(d)}
+                      className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-blue-50 hover:text-blue-600"
+                      aria-label={`Sửa ${d.name}`}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete?.(d)}
+                      className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-rose-50 hover:text-rose-600"
+                      aria-label={`Xóa ${d.name}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={7} className="p-8 text-center text-slate-400 text-sm">
+              <td colSpan={7} className="p-8 text-center text-sm text-slate-400">
                 Không có dữ liệu
               </td>
             </tr>
@@ -61,22 +77,24 @@ export const DrugsTable = ({ drugs, page, totalPages, setPage }: DrugsTableProps
         </tbody>
       </table>
 
-      <div className="flex items-center justify-between p-4 bg-slate-50 border-t border-slate-100">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+      <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 p-4">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
           Trang {page + 1} / {totalPages || 1}
         </span>
         <div className="flex gap-2">
           <button
+            type="button"
             disabled={page === 0}
             onClick={() => setPage(page - 1)}
-            className="p-2 border border-slate-200 rounded-lg bg-white text-slate-600 hover:border-slate-300 disabled:opacity-40 transition-all"
+            className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-40"
           >
             <ChevronLeft size={16} />
           </button>
           <button
+            type="button"
             disabled={page >= totalPages - 1}
             onClick={() => setPage(page + 1)}
-            className="p-2 border border-slate-200 rounded-lg bg-white text-slate-600 hover:border-slate-300 disabled:opacity-40 transition-all"
+            className="rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition-all hover:border-slate-300 hover:bg-slate-50 disabled:opacity-40"
           >
             <ChevronRight size={16} />
           </button>

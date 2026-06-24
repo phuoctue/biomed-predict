@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../lib/api-client";
 import { PatientInfo, Interaction, PrescribedDrug } from "../types/evaluation";
 
@@ -8,59 +8,38 @@ interface EvaluationData {
   drugs: PrescribedDrug[];
 }
 
+export const evaluationKeys = {
+  latest: (mrn: string) => ["evaluation", "latest", mrn] as const,
+};
+
 export const useEvaluation = (mrn: string | null) => {
-  const [data, setData] = useState<EvaluationData>({
-    patient: null,
-    interactions: [],
-    drugs: [],
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!mrn) {
-      setData({ patient: null, interactions: [], drugs: [] });
-      return;
-    }
-
-    let cancelled = false;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await apiClient.get("/ai-evaluations/latest", {
-          params: { patientId: mrn },
-        });
-
-        if (cancelled) return;
-
-        // Backend returns ApiResponse.ok() → { success, message, data: { patient, interactions, drugs } }
-        const payload = response.data?.data;
-        if (payload) {
-          setData({
-            patient: payload.patient ?? null,
-            interactions: payload.interactions ?? [],
-            drugs: payload.drugs ?? [],
-          });
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("Failed to fetch evaluation:", err);
-          setError("Không thể tải kết quả đánh giá");
-          setData({ patient: null, interactions: [], drugs: [] });
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+  const query = useQuery({
+    queryKey: mrn ? evaluationKeys.latest(mrn) : ["evaluation", "latest", "empty"],
+    queryFn: async (): Promise<EvaluationData> => {
+      if (!mrn) {
+        return { patient: null, interactions: [], drugs: [] };
       }
-    };
 
-    fetchData();
-    return () => {
-      cancelled = true;
-    };
-  }, [mrn]);
+      const response = await apiClient.get("/ai-evaluations/latest", {
+        params: { patientId: mrn },
+      });
 
-  return { ...data, loading, error };
+      const payload = response.data?.data;
+      return {
+        patient: payload?.patient ?? null,
+        interactions: payload?.interactions ?? [],
+        drugs: payload?.drugs ?? [],
+      };
+    },
+    enabled: !!mrn,
+  });
+
+  return {
+    patient: query.data?.patient ?? null,
+    interactions: query.data?.interactions ?? [],
+    drugs: query.data?.drugs ?? [],
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: query.refetch,
+  };
 };

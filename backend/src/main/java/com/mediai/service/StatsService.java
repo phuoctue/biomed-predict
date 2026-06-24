@@ -31,10 +31,10 @@ public class StatsService {
         stats.put("users", userRepository.count());
         stats.put("patients", patientRepository.count());
         stats.put("evaluations", aiEvaluationRepository.count());
-        stats.put("highRiskCount", aiEvaluationRepository.countByRiskLevel("HIGH"));
-        stats.put("mediumRiskCount", aiEvaluationRepository.countByRiskLevel("MEDIUM"));
-        stats.put("lowRiskCount", aiEvaluationRepository.countByRiskLevel("LOW"));
-        stats.put("warningsCount", aiEvaluationRepository.countByRiskLevel("HIGH"));
+        stats.put("highRiskCount", aiEvaluationRepository.countByRiskLevelIgnoreCase("HIGH"));
+        stats.put("mediumRiskCount", aiEvaluationRepository.countByRiskLevelIgnoreCase("MEDIUM"));
+        stats.put("lowRiskCount", aiEvaluationRepository.countByRiskLevelIgnoreCase("LOW"));
+        stats.put("warningsCount", aiEvaluationRepository.countByRiskLevelIgnoreCase("HIGH"));
         return stats;
     }
 

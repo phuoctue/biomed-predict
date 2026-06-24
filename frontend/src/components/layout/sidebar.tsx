@@ -9,6 +9,7 @@ import { useAuthStore } from '../../features/auth/store/auth.store';
 export const Sidebar = () => {
   const location = useLocation();
   const clearAuth = useAuthStore((state) => state.clearAuth);
+  const userRole = useAuthStore((state) => state.user?.role);
 
   const menuItems = [
     { path: routePaths.dashboard, label: 'Tổng quan', icon: <LayoutDashboard className="h-5 w-5" /> },
@@ -16,8 +17,11 @@ export const Sidebar = () => {
     { path: routePaths.drugs, label: 'Danh mục thuốc', icon: <Pill className="h-5 w-5" /> },
     { path: routePaths.evaluations, label: 'Đánh giá AI (CDSS)', icon: <ShieldAlert className="h-5 w-5" /> },
     { path: routePaths.history, label: 'Lịch sử', icon: <History className="h-5 w-5" /> },
-    { path: routePaths.settings, label: 'Quản trị', icon: <Settings className="h-5 w-5" /> },
   ];
+
+  const visibleMenuItems = userRole === "ADMIN"
+    ? [...menuItems, { path: routePaths.settings, label: 'Quản trị', icon: <Settings className="h-5 w-5" /> }]
+    : menuItems;
 
   const handleLogout = () => {
     clearAuth();
@@ -40,7 +44,7 @@ export const Sidebar = () => {
 
       {/* DANH SÁCH MENU */}
       <nav className="flex-1 p-4 space-y-2">
-        {menuItems.map((item) => {
+        {visibleMenuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <NavLink

@@ -1,46 +1,66 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "../lib/api-client";
 
-interface Patient {
+export interface Patient {
   id: string;
   mrn: string;
   fullName: string;
   diagnosis?: string;
+  sex?: string;
+  dateOfBirth?: string;
+  citizenId?: string;
+  phone?: string;
+  address?: string;
+  heightCm?: number;
+  weightKg?: number;
+  bloodType?: string;
+  status?: string;
+  allergies?: string;
+  allergy?: string;
+  latestTestName?: string;
+  latestTestValue?: string;
+  latestTestDate?: string;
 }
 
-export const usePatients = () => {
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+type PatientsResponse = {
+  content?: Patient[];
+  data?: Patient[];
+  totalPages?: number;
+  totalElements?: number;
+  success?: boolean;
+};
 
-  const fetchPatients = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+export const patientKeys = {
+  list: (params: { page: number; size: number; keyword?: string }) =>
+    ["patients", params] as const,
+};
 
+export const usePatients = (params?: { page?: number; size?: number; keyword?: string }) => {
+  const page = params?.page ?? 0;
+  const size = params?.size ?? 100;
+  const keyword = params?.keyword ?? "";
+
+  const query = useQuery({
+    queryKey: patientKeys.list({ page, size, keyword }),
+    queryFn: async (): Promise<PatientsResponse> => {
       const response = await apiClient.get("/patients", {
         params: {
-          page: 0,
-          size: 100,
-          sort: "fullName,asc"
-        }
+          page,
+          size,
+          sort: "fullName,asc",
+          keyword: keyword || undefined,
+        },
       });
+      return response.data;
+    },
+  });
 
-      if (response.data && response.data.success) {
-        setPatients(response.data.content || []); // Backend uses 'content' not 'data'
-      }
-    } catch (err) {
-      console.error("Failed to fetch patients:", err);
-      setError("Không thể tải danh sách bệnh nhân");
-      setPatients([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPatients();
-  }, [fetchPatients]);
-
-  return { patients, loading, error, refetch: fetchPatients };
+  return {
+    patients: query.data?.content ?? query.data?.data ?? [],
+    totalPages: query.data?.totalPages ?? 0,
+    totalElements: query.data?.totalElements ?? (query.data?.content ?? query.data?.data ?? []).length,
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    refetch: query.refetch,
+  };
 };

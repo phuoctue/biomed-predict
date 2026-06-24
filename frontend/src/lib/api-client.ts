@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { useAuthStore } from "../features/auth/store/auth.store";
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api",
   withCredentials: true,
   timeout: 20000,
 });
@@ -60,7 +60,7 @@ apiClient.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081/api"}/auth/refresh`,
+          `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080/api"}/auth/refresh`,
           { refreshToken },
           { withCredentials: true }
         );

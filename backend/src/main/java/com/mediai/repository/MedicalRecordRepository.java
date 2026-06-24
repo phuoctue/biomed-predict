@@ -9,4 +9,5 @@ import com.mediai.entity.MedicalRecord;
 
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, UUID> {
+    MedicalRecord findTopByPatient_IdOrderByVisitDateDesc(UUID patientId);
 }

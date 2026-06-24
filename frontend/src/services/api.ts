@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../features/auth/store/auth.store';
 
 // Vite exposes env vars via import.meta.env (not process.env)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8081/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -33,9 +33,9 @@ apiClient.interceptors.response.use(
 
 export const patientAPI = {
   create: (data: unknown) => apiClient.post('/patients', data),
-  getById: (id: number) => apiClient.get(`/patients/${id}`),
-  update: (id: number, data: unknown) => apiClient.put(`/patients/${id}`, data),
-  delete: (id: number) => apiClient.delete(`/patients/${id}`),
+  getById: (id: string | number) => apiClient.get(`/patients/${id}`),
+  update: (id: string | number, data: unknown) => apiClient.put(`/patients/${id}`, data),
+  delete: (id: string | number) => apiClient.delete(`/patients/${id}`),
 };
 
 export const medicalRecordAPI = {
@@ -51,7 +51,9 @@ export const prescriptionAPI = {
 
 export const drugAPI = {
   create: (data: unknown) => apiClient.post('/drugs', data),
-  getById: (id: number) => apiClient.get(`/drugs/${id}`),
+  getById: (id: string | number) => apiClient.get(`/drugs/${id}`),
+  update: (id: string | number, data: unknown) => apiClient.put(`/drugs/${id}`, data),
+  delete: (id: string | number) => apiClient.delete(`/drugs/${id}`),
 };
 
 export const aiEvaluationAPI = {

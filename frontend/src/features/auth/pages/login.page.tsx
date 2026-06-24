@@ -1,97 +1,90 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail, ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../store/auth.store';
-import { loginApi } from '../api/auth.api';
-import { routePaths } from '../../../app/routes/route-paths';
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-// Đường dẫn chính xác 3 cấp thư mục để từ auth/pages đi ra src/components
-import { RoleTabs, RoleType } from '../../../components/layout/role-tabs';
-import { LoginInput } from '../../../components/layout/login-input';
+import { routePaths } from "../../../app/routes/route-paths";
+import { LoginInput } from "../../../components/layout/login-input";
+import { RoleTabs, RoleType } from "../../../components/layout/role-tabs";
+import { Spinner } from "@/components/ui/Spinner";
+import { loginApi } from "../api/auth.api";
+import { useAuthStore } from "../store/auth.store";
 
 export function LoginPage() {
-  const [role, setRole] = useState<RoleType>('doctor');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<RoleType>("doctor");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const setAuth = useAuthStore((state) => state.setAuth);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await loginApi({ email, password });
-      setAuth({ accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user });
+  const loginMutation = useMutation({
+    mutationFn: loginApi,
+    onSuccess: (result) => {
+      setAuth({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      });
       navigate(routePaths.dashboard, { replace: true });
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       setError(message);
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    loginMutation.mutate({ email, password });
   };
 
+  const isSubmitting = loginMutation.isPending;
+
   return (
-    <div className="relative flex min-h-screen w-full font-sans antialiased bg-slate-50 overflow-hidden">
-      
-      {/* BACKGROUND LỚP DƯỚI: Chia đôi màn hình chuẩn thẩm mỹ */}
-      <div className="absolute inset-0 flex w-full h-full select-none pointer-events-none">
-        {/* Nửa trái: Màu sáng mượt */}
+    <div className="relative flex min-h-screen w-full overflow-hidden bg-slate-50 font-sans antialiased">
+      <div className="absolute inset-0 flex h-full w-full select-none pointer-events-none">
         <div className="hidden lg:block lg:w-1/2 bg-gradient-to-tr from-blue-50/40 to-white" />
-        
-        {/* Nửa phải: Ảnh nền y khoa làm mờ chỉn chu */}
-        <div 
-          className="w-full lg:w-1/2 bg-cover bg-center opacity-90 lg:opacity-100"
-          style={{ 
-            backgroundImage: `linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.15) 100%), url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop')` 
+        <div
+          className="w-full bg-cover bg-center opacity-90 lg:w-1/2 lg:opacity-100"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.15) 100%), url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop')",
           }}
         />
       </div>
 
-      {/* LỚP TRÊN CÙNG: Căn giữa tuyệt đối (items-center justify-center) cho Form */}
       <div className="relative z-10 flex min-h-screen w-full items-center justify-center p-4 sm:p-8">
-        
-        {/* Form Card chính - Nổi bật ở chính giữa */}
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100/80 p-8 flex flex-col items-center backdrop-blur-sm">
-          
-          {/* Logo & Tiêu đề thương hiệu */}
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-1.5 text-blue-600 font-bold text-2xl tracking-wide">
-              <span className="border-2 border-blue-600 rounded p-0.5 text-xs font-black">✚</span>
+        <div className="flex w-full max-w-md flex-col items-center rounded-3xl border border-slate-100/80 bg-white p-8 shadow-2xl backdrop-blur-sm">
+          <div className="mb-6 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-2xl font-bold tracking-wide text-blue-600">
+              <span className="rounded border-2 border-blue-600 p-0.5 text-xs font-black">✚</span>
               <span>MedEval</span>
             </div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-medium mt-1">
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-slate-400">
               Hệ thống hỗ trợ lâm sàng thông minh
             </p>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-6">
+          <h2 className="mb-6 text-xl font-bold text-slate-800 sm:text-2xl">
             Chào mừng quay trở lại
           </h2>
 
-          {/* Tabs chọn vai trò */}
           <RoleTabs activeRole={role} onChange={setRole} />
 
-          {/* Form Nhập liệu */}
           <form onSubmit={handleSubmit} className="w-full space-y-4">
-            
-            {/* Thông báo lỗi */}
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-700">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            {/* Input Email */}
             <LoginInput
               label="Email"
               type="email"
@@ -102,7 +95,6 @@ export function LoginPage() {
               icon={<Mail className="h-4 w-4" />}
             />
 
-            {/* Input Mật khẩu */}
             <div className="relative">
               <div className="absolute right-0 top-0 z-10">
                 <a href="#forgot" className="text-xs font-semibold text-blue-600 hover:underline">
@@ -111,7 +103,7 @@ export function LoginPage() {
               </div>
               <LoginInput
                 label="Mật khẩu"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 required
                 placeholder="••••••••"
                 value={password}
@@ -120,8 +112,8 @@ export function LoginPage() {
                 rightElement={
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-slate-400 hover:text-slate-600 flex items-center justify-center"
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="flex items-center justify-center text-slate-400 hover:text-slate-600"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -129,41 +121,45 @@ export function LoginPage() {
               />
             </div>
 
-            {/* Checkbox duy trì trạng thái */}
             <div className="flex items-center pt-1">
               <input
                 id="remember-me"
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer"
+                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-xs text-slate-500 font-medium select-none cursor-pointer">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block cursor-pointer select-none text-xs font-medium text-slate-500"
+              >
                 Duy trì trạng thái đăng nhập
               </label>
             </div>
 
-            {/* Nút Đăng nhập */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-2 group text-sm disabled:opacity-70"
+              disabled={isSubmitting}
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-md shadow-blue-500/10 transition-all hover:bg-blue-700 disabled:opacity-70"
             >
-              <span>{loading ? 'Đang xác thực...' : 'Đăng nhập'}</span>
-              {!loading && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
+              {isSubmitting ? (
+                <Spinner label="Đang xác thực..." className="text-white" />
+              ) : (
+                <>
+                  <span>Đăng nhập</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Đăng ký */}
-          <div className="mt-8 text-xs text-slate-500 font-medium">
-            Chưa có tài khoản chuyên gia?{' '}
-            <Link to="/register" className="text-blue-600 font-bold hover:underline">
+          <div className="mt-8 text-xs font-medium text-slate-500">
+            Chưa có tài khoản chuyên gia?{" "}
+            <Link to="/register" className="font-bold text-blue-600 hover:underline">
               Đăng ký ngay
             </Link>
           </div>
-
         </div>
-
       </div>
     </div>
   );

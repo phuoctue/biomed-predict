@@ -52,23 +52,25 @@ public class DrugController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String drugGroup,
             @RequestParam(required = false) String ingredient,
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(keyword, drugGroup, ingredient, pageable);
+        return drugService.listDrugs(keyword, drugGroup, ingredient, status, pageable);
     }
 
     @GetMapping("/search")
     public PageResponse<DrugSummaryResponse> searchDrugs(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(keyword, null, null, pageable);
+        return drugService.listDrugs(keyword, null, null, null, pageable);
     }
 
     @GetMapping("/search/advanced")
     public PageResponse<DrugSummaryResponse> searchDrugsAdvanced(
             @RequestParam(required = false) String ingredient,
             @RequestParam(required = false) String drugGroup,
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(null, drugGroup, ingredient, pageable);
+        return drugService.listDrugs(null, drugGroup, ingredient, status, pageable);
     }
 
     @GetMapping("/{id}")
@@ -138,13 +140,13 @@ public class DrugController {
             @PathVariable UUID id,
             @PageableDefault(size = 20) Pageable pageable) {
         var drug = drugService.getDrug(id);
-        return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, pageable);
+        return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, null, pageable);
     }
 
     @GetMapping("/search/by-symptoms")
     public PageResponse<DrugSummaryResponse> searchBySymptoms(
             @RequestParam(required = false) String symptom,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(symptom, null, null, pageable);
+        return drugService.listDrugs(symptom, null, null, null, pageable);
     }
 }

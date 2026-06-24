@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { apiClient } from '../lib/api-client';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../lib/api-client";
 
 export interface User {
   id: string;
@@ -9,37 +9,40 @@ export interface User {
   department?: string;
 }
 
-export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+type UsersResponse = {
+  content?: User[];
+  data?: User[];
+  success?: boolean;
+};
 
-  const fetchUsers = async (params?: { keyword?: string; page?: number; size?: number }) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await apiClient.get('/users', {
+export const userKeys = {
+  list: (params: { keyword?: string; page?: number; size?: number } = {}) => ["users", params] as const,
+};
+
+export const useUsers = (params?: { keyword?: string; page?: number; size?: number }) => {
+  return useQuery({
+    queryKey: userKeys.list(params),
+    queryFn: async (): Promise<User[]> => {
+      const response = await apiClient.get<UsersResponse>("/users", {
         params: {
           keyword: params?.keyword || undefined,
           page: params?.page ?? 0,
           size: params?.size ?? 20,
         },
       });
-      if (response.data?.success) {
-        setUsers(response.data.data || []);
-      }
-    } catch (err) {
-      console.error('Lỗi tải người dùng:', err);
-      setError('Không thể tải danh sách người dùng');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data.content ?? response.data.data ?? [];
+    },
+  });
+};
 
-  const deleteUser = async (id: string) => {
-    await apiClient.delete(`/users/${id}`);
-    setUsers(prev => prev.filter(u => u.id !== id));
-  };
-
-  return { users, loading, error, fetchUsers, deleteUser };
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/users/${id}`);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
 };
