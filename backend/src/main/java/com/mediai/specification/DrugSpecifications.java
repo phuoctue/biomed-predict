@@ -50,4 +50,13 @@ public final class DrugSpecifications {
             return cb.like(cb.lower(ingredientJoin.get("name")), "%" + ingredient.trim().toLowerCase() + "%");
         };
     }
+
+    public static Specification<Drug> statusEquals(String status) {
+        return (root, query, cb) -> {
+            if (!StringUtils.hasText(status)) {
+                return cb.conjunction();
+            }
+            return cb.equal(cb.lower(root.get("status")), status.trim().toLowerCase());
+        };
+    }
 }

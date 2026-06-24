@@ -1,29 +1,48 @@
-import { useState } from 'react';
-import { User } from '@/types/user';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "../lib/api-client";
 
-export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
+export interface User {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  department?: string;
+}
 
-  const fetchUsers = async (params: { keyword?: string }) => {
-    setLoading(true);
-    try {
-      // Gọi API theo tài liệu: GET /api/users [cite: 77]
-      const response = await fetch(`/api/users?keyword=${params.keyword || ''}`);
-      const result = await response.json();
-      setUsers(result.data);
-    } catch (error) {
-      console.error("Lỗi tải người dùng:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+type UsersResponse = {
+  content?: User[];
+  data?: User[];
+  success?: boolean;
+};
 
-  const deleteUser = async (id: number) => {
-    // Gọi API theo tài liệu: DELETE /api/users/{id} [cite: 96]
-    await fetch(`/api/users/${id}`, { method: 'DELETE' });
-    setUsers(users.filter(u => u.id !== id));
-  };
+export const userKeys = {
+  list: (params: { keyword?: string; page?: number; size?: number } = {}) => ["users", params] as const,
+};
 
-  return { users, loading, fetchUsers, deleteUser };
+export const useUsers = (params?: { keyword?: string; page?: number; size?: number }) => {
+  return useQuery({
+    queryKey: userKeys.list(params),
+    queryFn: async (): Promise<User[]> => {
+      const response = await apiClient.get<UsersResponse>("/users", {
+        params: {
+          keyword: params?.keyword || undefined,
+          page: params?.page ?? 0,
+          size: params?.size ?? 20,
+        },
+      });
+      return response.data.content ?? response.data.data ?? [];
+    },
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/users/${id}`);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
 };

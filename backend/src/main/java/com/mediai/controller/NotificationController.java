@@ -83,8 +83,7 @@ public class NotificationController {
 
     @PutMapping("/{id}/read")
     public ApiResponse<NotificationResponse> markAsRead(@PathVariable UUID id) {
-        return ApiResponse.ok("Notification marked as read.",
-                notificationService.markAsRead(id));
+        return ApiResponse.ok("Notification marked as read.", notificationService.markAsRead(id));
     }
 
     @PutMapping("/{id}/archive")

@@ -29,7 +29,8 @@ public final class UserSpecifications {
             if (role == null) {
                 return cb.conjunction();
             }
-            return cb.equal(root.get("role"), role);
+            // User.role is a plain varchar column
+            return cb.equal(root.get("role"), role.name());
         };
     }
 }

@@ -2,104 +2,77 @@ package com.mediai.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 
+/**
+ * Maps to the `audit_logs` table (from schema.sql).
+ * Column mapping aligned with actual DB schema.
+ */
 @Entity
-@Table(name = "activity_logs")
+@Table(name = "audit_logs")
 public class ActivityLog extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private ActionType actionType;
+    // DB column is `action` (plain text, no enum constraint)
+    @Column(name = "action", nullable = false, length = 255)
+    private String actionType;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "entity_type", length = 255)
     private String entityType;
 
-    @Column(nullable = false)
+    @Column(name = "entity_id")
     private UUID entityId;
 
-    @Column(columnDefinition = "text")
+    // Use new_data as the "details" storage field
+    @Column(name = "new_data", columnDefinition = "text")
     private String details;
 
-    @Column(name = "ip_address", length = 50)
+    @Column(name = "ip_address", length = 45)
     private String ipAddress;
 
     @Column(name = "user_agent", columnDefinition = "text")
     private String userAgent;
 
+    @Column(name = "result", length = 50)
+    private String result;
+
+    // Legacy ActionType enum kept for service compatibility
     public enum ActionType {
-        CREATE,
-        READ,
-        UPDATE,
-        DELETE,
-        EXPORT,
-        IMPORT,
-        AUTHENTICATE,
-        AUTHORIZE_FAILED
+        CREATE, READ, UPDATE, DELETE, EXPORT, IMPORT, AUTHENTICATE, AUTHORIZE_FAILED
     }
 
-    public User getUser() {
-        return user;
-    }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    public String getActionType() { return actionType; }
+    public void setActionType(String actionType) { this.actionType = actionType; }
 
-    public ActionType getActionType() {
-        return actionType;
-    }
-
+    // Accept enum from service layer, store as string
     public void setActionType(ActionType actionType) {
-        this.actionType = actionType;
+        this.actionType = actionType == null ? null : actionType.name();
     }
 
-    public String getEntityType() {
-        return entityType;
-    }
+    public String getEntityType() { return entityType; }
+    public void setEntityType(String entityType) { this.entityType = entityType; }
 
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
+    public UUID getEntityId() { return entityId; }
+    public void setEntityId(UUID entityId) { this.entityId = entityId; }
 
-    public UUID getEntityId() {
-        return entityId;
-    }
+    public String getDetails() { return details; }
+    public void setDetails(String details) { this.details = details; }
 
-    public void setEntityId(UUID entityId) {
-        this.entityId = entityId;
-    }
+    public String getIpAddress() { return ipAddress; }
+    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
 
-    public String getDetails() {
-        return details;
-    }
+    public String getUserAgent() { return userAgent; }
+    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
 
-    public void setDetails(String details) {
-        this.details = details;
-    }
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-    }
+    public String getResult() { return result; }
+    public void setResult(String result) { this.result = result; }
 }

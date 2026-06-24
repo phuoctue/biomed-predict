@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from typing import Any
+import logging
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def build_prompt(payload: dict[str, Any], purpose: str) -> str:
@@ -16,6 +19,10 @@ def build_prompt(payload: dict[str, Any], purpose: str) -> str:
 
 async def call_llm(prompt: str) -> str:
     provider = settings.llm_provider.lower()
+    logger.info(f"=== LLM Call Started ===")
+    logger.info(f"Provider: {provider}")
+    logger.info(f"Model: {settings.llm_model}")
+    logger.info(f"API Key present: {bool(settings.llm_api_key)}")
 
     if provider == "openai" and settings.llm_api_key:
         try:
@@ -35,6 +42,7 @@ async def call_llm(prompt: str) -> str:
 
     if provider == "groq" and settings.llm_api_key:
         try:
+            logger.info("Using Groq provider...")
             from langchain_core.messages import HumanMessage
             from langchain_groq import ChatGroq
 
@@ -43,11 +51,15 @@ async def call_llm(prompt: str) -> str:
                 model=settings.llm_model,
                 temperature=settings.llm_temperature,
             )
+            logger.info("Groq client created, sending request...")
             response = await client.ainvoke([HumanMessage(content=prompt)])
+            logger.info(f"Groq response received: {response.content[:200]}...")
             return response.content
-        except Exception:
+        except Exception as e:
+            logger.error(f"Groq API call failed: {e}")
             return fallback_response(prompt)
 
+    logger.warning(f"No valid LLM provider configured. Provider={provider}, Has API key={bool(settings.llm_api_key)}")
     return fallback_response(prompt)
 
 

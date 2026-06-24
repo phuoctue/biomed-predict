@@ -1,7 +1,5 @@
 package com.mediai.service;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -9,11 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mediai.dto.common.PageResponse;
 import com.mediai.dto.drug.DrugSummaryResponse;
 import com.mediai.entity.Bookmark;
-import com.mediai.entity.Drug;
-import com.mediai.entity.User;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.BookmarkRepository;
 import com.mediai.repository.DrugRepository;
@@ -35,34 +30,31 @@ public class BookmarkService {
 
     @Transactional
     public DrugSummaryResponse addBookmark(UUID userId, UUID drugId) {
-        if (bookmarkRepository.existsByUserIdAndDrugId(userId, drugId)) {
+        if (bookmarkRepository.existsByUser_IdAndDrug_Id(userId, drugId)) {
             throw new IllegalStateException("Drug already bookmarked.");
         }
-
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found."));
         var drug = drugRepository.findById(drugId)
                 .orElseThrow(() -> new ResourceNotFoundException("Drug not found."));
 
-        var bookmark = new Bookmark(user, drug);
-        bookmarkRepository.save(bookmark);
-
+        bookmarkRepository.save(new Bookmark(user, drug));
         return DrugSummaryResponse.from(drug);
     }
 
     @Transactional
     public void removeBookmark(UUID userId, UUID drugId) {
-        bookmarkRepository.deleteByUserIdAndDrugId(userId, drugId);
+        bookmarkRepository.deleteByUser_IdAndDrug_Id(userId, drugId);
     }
 
     @Transactional(readOnly = true)
     public Page<DrugSummaryResponse> getBookmarks(UUID userId, Pageable pageable) {
-        return bookmarkRepository.findByUserId(userId, pageable)
+        return bookmarkRepository.findByUser_Id(userId, pageable)
                 .map(b -> DrugSummaryResponse.from(b.getDrug()));
     }
 
     @Transactional(readOnly = true)
     public boolean isBookmarked(UUID userId, UUID drugId) {
-        return bookmarkRepository.existsByUserIdAndDrugId(userId, drugId);
+        return bookmarkRepository.existsByUser_IdAndDrug_Id(userId, drugId);
     }
 }

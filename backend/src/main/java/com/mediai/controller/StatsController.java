@@ -2,11 +2,13 @@ package com.mediai.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.mediai.dto.common.ApiResponse;
 import com.mediai.service.StatsService;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -38,5 +40,11 @@ public class StatsController {
     @GetMapping("/evaluations")
     public ApiResponse<Long> getEvaluationCount() {
         return ApiResponse.ok("Evaluation count retrieved.", statsService.getEvaluationCount());
+    }
+
+    @GetMapping("/recent-evaluations")
+    public ApiResponse<List<Map<String, Object>>> getRecentEvaluations(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ApiResponse.ok("Recent evaluations retrieved.", statsService.getRecentEvaluations(limit));
     }
 }

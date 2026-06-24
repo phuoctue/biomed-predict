@@ -7,9 +7,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "drugs")
+@Getter
+@Setter
 public class Drug extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 64)
@@ -53,116 +57,4 @@ public class Drug extends BaseEntity {
 
     @OneToMany(mappedBy = "drug")
     private List<DrugIngredient> drugIngredients = new ArrayList<>();
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getGenericName() {
-        return genericName;
-    }
-
-    public void setGenericName(String genericName) {
-        this.genericName = genericName;
-    }
-
-    public String getDrugGroup() {
-        return drugGroup;
-    }
-
-    public void setDrugGroup(String drugGroup) {
-        this.drugGroup = drugGroup;
-    }
-
-    public String getDosageForm() {
-        return dosageForm;
-    }
-
-    public void setDosageForm(String dosageForm) {
-        this.dosageForm = dosageForm;
-    }
-
-    public String getStrength() {
-        return strength;
-    }
-
-    public void setStrength(String strength) {
-        this.strength = strength;
-    }
-
-    public String getUnit() {
-        return unit;
-    }
-
-    public void setUnit(String unit) {
-        this.unit = unit;
-    }
-
-    public String getManufacturer() {
-        return manufacturer;
-    }
-
-    public void setManufacturer(String manufacturer) {
-        this.manufacturer = manufacturer;
-    }
-
-    public String getUsageInstructions() {
-        return usageInstructions;
-    }
-
-    public void setUsageInstructions(String usageInstructions) {
-        this.usageInstructions = usageInstructions;
-    }
-
-    public String getRecommendedDose() {
-        return recommendedDose;
-    }
-
-    public void setRecommendedDose(String recommendedDose) {
-        this.recommendedDose = recommendedDose;
-    }
-
-    public String getSideEffects() {
-        return sideEffects;
-    }
-
-    public void setSideEffects(String sideEffects) {
-        this.sideEffects = sideEffects;
-    }
-
-    public String getStorageCondition() {
-        return storageCondition;
-    }
-
-    public void setStorageCondition(String storageCondition) {
-        this.storageCondition = storageCondition;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<DrugIngredient> getDrugIngredients() {
-        return drugIngredients;
-    }
-
-    public void setDrugIngredients(List<DrugIngredient> drugIngredients) {
-        this.drugIngredients = drugIngredients;
-    }
 }

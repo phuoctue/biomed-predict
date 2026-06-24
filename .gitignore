@@ -5,6 +5,11 @@ backend/.mvn/
 ai-service/.venv/
 ai-service/__pycache__/
 ai-service/.pytest_cache/
+.tmp/
+.tmp/pg-dev/
+.tmp/pg-dev/**
+**/__pycache__/
+**/*.pyc
 .DS_Store
 .env
 .stakpak/

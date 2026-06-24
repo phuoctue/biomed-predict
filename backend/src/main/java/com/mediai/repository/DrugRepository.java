@@ -1,6 +1,7 @@
 package com.mediai.repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,7 @@ public interface DrugRepository extends JpaRepository<Drug, UUID>, JpaSpecificat
 
     boolean existsByCodeIgnoreCase(String code);
 
-    java.util.Optional<Drug> findByCodeIgnoreCase(String code);
+    Optional<Drug> findByCodeIgnoreCase(String code);
 
     List<Drug> findDistinctByDrugIngredients_Ingredient_Id(UUID ingredientId);
 }

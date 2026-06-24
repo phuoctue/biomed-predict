@@ -51,7 +51,8 @@ public class PatientController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<PatientResponse>> createPatient(@Valid @RequestBody CreatePatientRequest request) {
+    public ResponseEntity<ApiResponse<PatientResponse>> createPatient(
+            @Valid @RequestBody CreatePatientRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Patient created successfully.", patientService.createPatient(request)));
     }
@@ -74,9 +75,11 @@ public class PatientController {
         return ApiResponse.ok("Patient summary retrieved successfully.", patientService.getSummary(id));
     }
 
-    @GetMapping("/{mrn}/clinical-summary")
-    public ApiResponse<com.mediai.dto.patient.ClinicalSummaryResponse> getClinicalSummary(@PathVariable String mrn) {
-        return ApiResponse.ok("Patient clinical summary retrieved successfully.", patientService.getClinicalSummary(mrn));
+    @GetMapping("/clinical-summary/{mrn}")
+    public ApiResponse<com.mediai.dto.patient.ClinicalSummaryResponse> getClinicalSummary(
+            @PathVariable String mrn) {
+        return ApiResponse.ok("Patient clinical summary retrieved successfully.",
+                patientService.getClinicalSummary(mrn));
     }
 
     @GetMapping("/{id}/ai-history")

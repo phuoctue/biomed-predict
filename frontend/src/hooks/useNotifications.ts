@@ -10,7 +10,7 @@ export const useNotifications = () => {
   }, []);
 
   // Tính số lượng chưa đọc
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => n.status !== 'READ').length;
 
   return { notifications, unreadCount };
 };

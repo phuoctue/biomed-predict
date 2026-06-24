@@ -1,7 +1,9 @@
 package com.mediai.ai.dto;
 
+import java.util.UUID;
+
 public record InteractionDTO(
-        Long id,
+        UUID id,
         String drugPair,
         String severity,
         String description,

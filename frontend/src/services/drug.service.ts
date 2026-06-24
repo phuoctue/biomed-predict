@@ -1,54 +1,41 @@
 import { apiClient } from "../lib/api-client";
 
 export interface Drug {
-  id: number | string;
+  id: string;           // UUID
   name: string;
   code: string;
-  stockQuantity?: number;
+  genericName?: string;
+  drugGroup?: string;
+  strength?: string;
   unit?: string;
-  bookmarked?: boolean;
+  status?: string;
+  stockQuantity?: number;
 }
 
 export interface FetchDrugsParams {
   page: number;
   size: number;
   search?: string;
-  keyword?: string;
+  drugGroup?: string;
+  ingredient?: string;
+  status?: string;
+  advanced?: boolean;
 }
 
 export const fetchDrugs = async (params: FetchDrugsParams) => {
-  const response = await apiClient.get("/drugs", {
+  const { search, advanced, ...rest } = params;
+  const endpoint = advanced ? "/drugs/search/advanced" : "/drugs";
+  const response = await apiClient.get(endpoint, {
     params: {
-      ...params,
-      keyword: params.keyword ?? params.search
-    }
+      ...rest,
+      keyword: search || undefined,
+    },
   });
-  return response.data;
-};
-
-export interface DrugBookmark extends Drug {
-  bookmarkId?: number;
-  bookmarkedAt?: string;
-  note?: string;
-}
-
-export interface FetchBookmarkedDrugsParams {
-  page: number;
-  size: number;
-  keyword?: string;
-}
-
-export const fetchBookmarkedDrugs = async (params: FetchBookmarkedDrugsParams) => {
-  const response = await apiClient.get("/bookmarks", { params });
-  return response.data;
-};
-
-export const bookmarkDrug = async (drugId: number | string) => {
-  const response = await apiClient.post(`/bookmarks/drugs/${drugId}`);
-  return response.data;
-};
-
-export const removeDrugBookmark = async (drugId: number | string) => {
-  const response = await apiClient.delete(`/bookmarks/drugs/${drugId}`);
-  return response.data;
+  // BE trả về PageResponse: { success, content, totalElements, totalPages, page, size, ... }
+  const body = response.data;
+  return {
+    data: body.content ?? body.data ?? [],
+    totalElements: body.totalElements ?? 0,
+    totalPages: body.totalPages ?? 0,
+  };
 };

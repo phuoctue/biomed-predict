@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.mediai.entity.User;
+import com.mediai.entity.UserRole;
 
 public record UserResponse(
         UUID id,
@@ -19,9 +20,16 @@ public record UserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole().name(),
+                resolveRoleName(user),
                 user.getDepartment(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
+    }
+
+    private static String resolveRoleName(User user) {
+        if (user == null || user.getRole() == null || user.getRole().isBlank()) {
+            return UserRole.MEDICAL_STAFF.name();
+        }
+        return UserRole.fromDbName(user.getRole()).name();
     }
 }

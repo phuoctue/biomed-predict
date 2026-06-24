@@ -12,11 +12,12 @@ import com.mediai.entity.Bookmark;
 
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, UUID> {
-    Page<Bookmark> findByUserId(UUID userId, Pageable pageable);
 
-    Optional<Bookmark> findByUserIdAndDrugId(UUID userId, UUID drugId);
+    Page<Bookmark> findByUser_Id(UUID userId, Pageable pageable);
 
-    void deleteByUserIdAndDrugId(UUID userId, UUID drugId);
+    Optional<Bookmark> findByUser_IdAndDrug_Id(UUID userId, UUID drugId);
 
-    boolean existsByUserIdAndDrugId(UUID userId, UUID drugId);
+    void deleteByUser_IdAndDrug_Id(UUID userId, UUID drugId);
+
+    boolean existsByUser_IdAndDrug_Id(UUID userId, UUID drugId);
 }

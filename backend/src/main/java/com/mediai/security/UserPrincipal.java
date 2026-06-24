@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.mediai.entity.User;
+import com.mediai.entity.UserRole;
 
 public record UserPrincipal(
         UUID id,
@@ -19,13 +20,15 @@ public record UserPrincipal(
         String role) implements UserDetails {
 
     public static UserPrincipal from(User user) {
+        String roleName = user == null ? UserRole.MEDICAL_STAFF.name()
+                : UserRole.fromDbName(user.getRole()).name();
         return new UserPrincipal(
                 user.getId(),
                 user.getEmail(),
                 user.getPasswordHash(),
                 user.getFullName(),
                 user.getDepartment(),
-                user.getRole().name());
+                roleName);
     }
 
     @Override
@@ -33,33 +36,10 @@ public record UserPrincipal(
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    @Override public String getPassword()  { return password; }
+    @Override public String getUsername()  { return email; }
+    @Override public boolean isAccountNonExpired()     { return true; }
+    @Override public boolean isAccountNonLocked()      { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled()               { return true; }
 }

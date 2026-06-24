@@ -45,6 +45,21 @@ public class JwtService {
         return parseClaims(token, jwtProperties.accessSecret()).getSubject();
     }
 
+    public String extractUsernameFromRefresh(String token) {
+        return parseClaims(token, jwtProperties.refreshSecret()).getSubject();
+    }
+
+    public boolean isRefreshTokenValid(String token, String expectedUsername) {
+        try {
+            var claims = parseClaims(token, jwtProperties.refreshSecret());
+            return expectedUsername.equalsIgnoreCase(claims.getSubject())
+                    && REFRESH_TOKEN_TYPE.equals(claims.get("token_type", String.class))
+                    && claims.getExpiration().toInstant().isAfter(Instant.now());
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     public boolean isTokenValid(String token, UserPrincipal userPrincipal) {
         var claims = parseClaims(token, jwtProperties.accessSecret());
         return userPrincipal.getUsername().equalsIgnoreCase(claims.getSubject())
@@ -97,20 +112,25 @@ public class JwtService {
 
     private Duration parseDuration(String value) {
         var trimmed = value.trim().toLowerCase();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("Duration value must not be blank");
+        }
+        // Two-letter unit 'ms' must be checked before single-letter units to avoid
+        // accidentally parsing "15ms" as 15 minutes (the 'm' suffix match would strip the 's').
         if (trimmed.endsWith("ms")) {
             return Duration.ofMillis(Long.parseLong(trimmed.substring(0, trimmed.length() - 2)));
         }
-        if (trimmed.endsWith("s")) {
-            return Duration.ofSeconds(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
-        }
-        if (trimmed.endsWith("m")) {
-            return Duration.ofMinutes(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
+        if (trimmed.endsWith("d")) {
+            return Duration.ofDays(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
         }
         if (trimmed.endsWith("h")) {
             return Duration.ofHours(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
         }
-        if (trimmed.endsWith("d")) {
-            return Duration.ofDays(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
+        if (trimmed.endsWith("m")) {
+            return Duration.ofMinutes(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
+        }
+        if (trimmed.endsWith("s")) {
+            return Duration.ofSeconds(Long.parseLong(trimmed.substring(0, trimmed.length() - 1)));
         }
         return Duration.ofMinutes(Long.parseLong(trimmed));
     }

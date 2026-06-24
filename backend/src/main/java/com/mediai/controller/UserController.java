@@ -23,8 +23,8 @@ import com.mediai.dto.common.PageResponse;
 import com.mediai.dto.user.ChangePasswordRequest;
 import com.mediai.dto.user.CreateUserRequest;
 import com.mediai.dto.user.UpdateUserRequest;
-import com.mediai.dto.user.UserResponse;
 import com.mediai.dto.user.UpdateProfileRequest;
+import com.mediai.dto.user.UserResponse;
 import com.mediai.entity.UserRole;
 import com.mediai.security.UserPrincipal;
 import com.mediai.service.UserService;
@@ -41,10 +41,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    /**
-     * List all users with optional keyword search and role filter.
-     * Admin only.
-     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<UserResponse> listUsers(
@@ -54,20 +50,12 @@ public class UserController {
         return userService.listUsers(keyword, role, pageable);
     }
 
-    /**
-     * Get a single user by ID.
-     * Admin can fetch any user; other roles can only fetch themselves.
-     */
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public ApiResponse<UserResponse> getUser(@PathVariable UUID id) {
         return ApiResponse.ok("User retrieved successfully.", userService.getUser(id));
     }
 
-    /**
-     * Create a new user account.
-     * Admin only.
-     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
@@ -76,10 +64,6 @@ public class UserController {
                 .body(ApiResponse.ok("User created successfully.", userService.createUser(request)));
     }
 
-    /**
-     * Update a user's profile (fullName, role, department).
-     * Admin only.
-     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> updateUser(
@@ -88,10 +72,6 @@ public class UserController {
         return ApiResponse.ok("User updated successfully.", userService.updateUser(id, request));
     }
 
-    /**
-     * Delete a user. Admin cannot delete themselves.
-     * Admin only.
-     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> deleteUser(
@@ -101,10 +81,6 @@ public class UserController {
         return ApiResponse.ok("User deleted successfully.", "deleted");
     }
 
-    /**
-     * Reset a user's password.
-     * Admin only.
-     */
     @PutMapping("/{id}/password")
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> changePassword(
@@ -114,23 +90,16 @@ public class UserController {
         return ApiResponse.ok("Password changed successfully.", "updated");
     }
 
-    /**
-     * Get current user's profile.
-     * Available to all authenticated users.
-     */
     @GetMapping("/profile/me")
     public ApiResponse<UserResponse> getProfile(@AuthenticationPrincipal UserPrincipal principal) {
         return ApiResponse.ok("Profile retrieved successfully.", userService.getUser(principal.id()));
     }
 
-    /**
-     * Update current user's profile.
-     * Available to all authenticated users.
-     */
     @PutMapping("/profile/me")
     public ApiResponse<UserResponse> updateProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @Valid @RequestBody UpdateProfileRequest request) {
-        return ApiResponse.ok("Profile updated successfully.", userService.updateProfile(principal.id(), request));
+        return ApiResponse.ok("Profile updated successfully.",
+                userService.updateProfile(principal.id(), request));
     }
 }

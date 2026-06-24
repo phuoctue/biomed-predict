@@ -13,6 +13,7 @@ import com.mediai.auth.dto.ChangePasswordRequest;
 import com.mediai.auth.dto.LoginRequest;
 import com.mediai.auth.dto.LoginResponse;
 import com.mediai.auth.dto.MessageResponse;
+import com.mediai.auth.dto.RefreshTokenRequest;
 import com.mediai.auth.service.AuthService;
 import com.mediai.security.UserPrincipal;
 
@@ -31,6 +32,11 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return authService.refresh(request);
     }
 
     @PostMapping("/logout")

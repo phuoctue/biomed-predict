@@ -9,4 +9,8 @@ export const routePaths = {
   evaluations: '/evaluations',
   history: '/history',
   settings: '/settings',
+  admin: {
+    users: '/admin/users',
+    system: '/admin/system',
+  }
 } as const;

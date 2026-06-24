@@ -3,8 +3,8 @@ package com.mediai.ai.controller;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,12 +43,14 @@ public class AIEvaluationController {
             @Valid @RequestBody AIEvaluationRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("AI evaluation completed successfully.", aiEvaluationService.evaluate(request, principal)));
+                .body(ApiResponse.ok("AI evaluation completed successfully.",
+                        aiEvaluationService.evaluate(request, principal)));
     }
 
     @PostMapping("/explain")
     public ApiResponse<ExplainResponsePayload> explain(@Valid @RequestBody ExplainRequestPayload request) {
-        return ApiResponse.ok("AI explanation generated successfully.", aiEvaluationService.explain(request.result(), request.target_language()));
+        return ApiResponse.ok("AI explanation generated successfully.",
+                aiEvaluationService.explain(request.result(), request.target_language()));
     }
 
     @GetMapping("/evaluations")
@@ -57,15 +59,10 @@ public class AIEvaluationController {
             @RequestParam(required = false) UUID drugId,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = aiEvaluationService.listEvaluations(patientId, drugId, pageable);
-        return PageResponse.ok(
-                "AI evaluations retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("AI evaluations retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(),
+                page.isFirst(), page.isLast());
     }
 
     @GetMapping("/evaluations/{id}")

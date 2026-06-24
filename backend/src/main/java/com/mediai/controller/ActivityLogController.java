@@ -46,15 +46,9 @@ public class ActivityLogController {
     public PageResponse<ActivityLogResponse> getActivityLogs(
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogs(pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/by-user")
@@ -62,15 +56,9 @@ public class ActivityLogController {
             @RequestParam UUID userId,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUser(userId, pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/by-entity")
@@ -79,15 +67,9 @@ public class ActivityLogController {
             @RequestParam UUID entityId,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByEntity(entityType, entityId, pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/by-action")
@@ -95,15 +77,9 @@ public class ActivityLogController {
             @RequestParam String actionType,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByActionType(actionType, pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/by-user-and-action")
@@ -112,15 +88,9 @@ public class ActivityLogController {
             @RequestParam String actionType,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUserAndActionType(userId, actionType, pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/by-user-and-entity")
@@ -129,14 +99,8 @@ public class ActivityLogController {
             @RequestParam String entityType,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = activityLogService.getActivityLogsByUserAndEntity(userId, entityType, pageable);
-        return PageResponse.ok(
-                "Activity logs retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Activity logs retrieved successfully.",
+                page.getContent(), page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 }

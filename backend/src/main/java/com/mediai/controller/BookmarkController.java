@@ -44,15 +44,9 @@ public class BookmarkController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PageableDefault(size = 20) Pageable pageable) {
         var page = bookmarkService.getBookmarks(principal.id(), pageable);
-        return PageResponse.ok(
-                "Bookmarks retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        return PageResponse.ok("Bookmarks retrieved successfully.", page.getContent(),
+                page.getNumber(), page.getSize(), page.getTotalElements(),
+                page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @GetMapping("/drugs/{drugId}/is-bookmarked")

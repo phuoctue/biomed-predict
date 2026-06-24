@@ -1,14 +1,31 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import Pagination from "@/components/ui/Pagination";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import Pagination from '@/components/ui/Pagination';
+import { EditUserModal } from "@/components/SystemAdministration/EditUserModal";
+import type { EditableUser } from "@/components/SystemAdministration/EditUserModal";
+import { useDeleteUser, useUsers } from "@/hooks/useUsers";
+
+const roleLabel: Record<string, string> = {
+  DOCTOR: "Bác sĩ",
+  PHARMACIST: "Dược sĩ",
+  ADMIN: "Quản trị",
+  MEDICAL_STAFF: "Nhân viên y tế",
+};
 
 export const UserTable = () => {
-  const users = [
-    { name: "BS. Trần Hoàng", email: "hoang.tran@medeval.vn", role: "Bác sĩ", status: "Hoạt động" },
-    { name: "DS. Lê Minh", email: "minh.le@medeval.vn", role: "Dược sĩ", status: "Hoạt động" },
-    { name: "Phạm Thu", email: "thu.pham@medeval.vn", role: "Quản trị", status: "Ngoại tuyến" },
-    { name: "BS. Nguyễn An", email: "an.nguyen@medeval.vn", role: "Bác sĩ", status: "Hoạt động" },
-  ];
+  const [editingUser, setEditingUser] = useState<EditableUser | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const query = useUsers({ page: 0, size: 20 });
+  const deleteUser = useDeleteUser();
+
+  const users = query.data ?? [];
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
+    await deleteUser.mutateAsync(id);
+    setOpenMenuId(null);
+  };
 
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,64 +37,75 @@ export const UserTable = () => {
   const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-      <h3 className="font-bold text-slate-900 mb-6 text-base">Danh sách Người dùng</h3>
-      
-      <table className="w-full text-sm">
-        <thead className="text-slate-500 text-[11px] uppercase font-bold tracking-wider">
-          <tr className="border-b border-slate-100">
-            <th className="pb-4 text-left">Người dùng</th>
-            <th className="pb-4 text-left">Vai trò</th>
-            <th className="pb-4 text-left">Trạng thái</th>
-            <th className="pb-4 text-left">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-50">
-          {currentUsers.map((u, i) => (
-            <tr key={i} className="hover:bg-slate-50/50 transition-colors relative">
-              <td className="py-4">
-                <div className="font-bold text-slate-900">{u.name}</div>
-                <div className="text-[11px] text-slate-400">{u.email}</div>
-              </td>
-              <td className="py-4 text-slate-700 font-medium">{u.role}</td>
-              <td className="py-4">
-                <span className={`flex items-center gap-1.5 text-xs font-medium ${u.status === 'Hoạt động' ? 'text-emerald-600' : 'text-slate-400'}`}>
-                  <span className={`w-2 h-2 rounded-full ${u.status === 'Hoạt động' ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
-                  {u.status}
-                </span>
-              </td>
-              <td className="py-4 relative">
-                <button 
-                  onClick={() => setOpenMenuIndex(openMenuIndex === i ? null : i)}
-                  className="text-slate-400 hover:text-slate-600 p-1"
-                >
-                  <MoreHorizontal className="h-5 w-5" />
-                </button>
-                {openMenuIndex === i && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white rounded-xl border border-slate-100 shadow-lg z-10 py-1">
-                    <button onClick={() => alert(`Sửa ${u.name}`)} className="flex items-center gap-2 w-full px-4 py-2 text-xs text-slate-600 hover:bg-slate-50">
-                      <Pencil className="h-3.5 w-3.5" /> Sửa
-                    </button>
-                    <button onClick={() => alert(`Xóa ${u.name}`)} className="flex items-center gap-2 w-full px-4 py-2 text-xs text-rose-600 hover:bg-rose-50">
-                      <Trash2 className="h-3.5 w-3.5" /> Xóa
-                    </button>
-                  </div>
-                )}
-              </td>
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+      <h3 className="mb-6 text-base font-bold text-slate-900">Danh sách Người dùng</h3>
+      {query.isLoading ? (
+        <p className="py-6 text-center text-sm text-slate-400">Đang tải...</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
+            <tr className="border-b border-slate-100">
+              <th className="pb-4 text-left">Người dùng</th>
+              <th className="pb-4 text-left">Vai trò</th>
+              <th className="pb-4 text-left">Phòng ban</th>
+              <th className="pb-4 text-left">Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Phân trang */}
-      <div className="mt-6">
-        <Pagination
-          currentPage={currentPage}
-          totalItems={users.length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-      </div>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-6 text-center text-sm italic text-slate-400">
+                  Chưa có người dùng
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => (
+                <tr key={u.id} className="transition-colors hover:bg-slate-50/50">
+                  <td className="py-4">
+                    <div className="font-bold text-slate-900">{u.fullName}</div>
+                    <div className="text-[11px] text-slate-400">{u.email}</div>
+                  </td>
+                  <td className="py-4 font-medium text-slate-700">{roleLabel[u.role] ?? u.role}</td>
+                  <td className="py-4 text-xs text-slate-500">{u.department || "—"}</td>
+                  <td className="relative py-4">
+                    <button onClick={() => setOpenMenuId(openMenuId === u.id ? null : u.id)} className="text-slate-400 hover:text-slate-600">
+                      <MoreHorizontal size={20} />
+                    </button>
+                    {openMenuId === u.id ? (
+                      <div className="absolute right-0 z-10 mt-2 w-32 rounded-lg border border-slate-100 bg-white py-1 shadow-lg">
+                        <button
+                          onClick={() => {
+                            setEditingUser(u);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-4 py-2 text-left text-slate-700 hover:bg-slate-50"
+                        >
+                          <Pencil size={14} /> Sửa
+                        </button>
+                        <button
+                          onClick={() => handleDelete(u.id)}
+                          className="flex w-full items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-slate-50"
+                        >
+                          <Trash2 size={14} /> Xóa
+                        </button>
+                      </div>
+                    ) : null}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
+      <EditUserModal
+        isOpen={!!editingUser}
+        user={editingUser}
+        onClose={() => setEditingUser(null)}
+        onSuccess={() => {
+          setEditingUser(null);
+          query.refetch();
+        }}
+      />
     </div>
   );
 };
