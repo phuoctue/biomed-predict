@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type RoleType = 'doctor' | 'pharmacist' | 'patient' | 'admin';
+export type RoleType = 'doctor' | 'pharmacist' | 'admin';
 
 interface RoleTabsProps {
   activeRole: RoleType;
@@ -11,12 +11,11 @@ export const RoleTabs: React.FC<RoleTabsProps> = ({ activeRole, onChange }) => {
   const roles: { id: RoleType; label: string }[] = [
     { id: 'doctor', label: 'Bác sĩ' },
     { id: 'pharmacist', label: 'Dược sĩ' },
-    { id: 'patient', label: 'Bệnh nhân' },
     { id: 'admin', label: 'Quản trị' },
   ];
 
   return (
-    <div className="w-full grid grid-cols-4 gap-1 border-b border-slate-100 pb-2 mb-6 text-center text-xs sm:text-sm font-medium text-slate-400">
+    <div className="w-full grid grid-cols-3 gap-1 border-b border-slate-100 pb-2 mb-6 text-center text-xs sm:text-sm font-medium text-slate-400">
       {roles.map((r) => {
         const isActive = activeRole === r.id;
         return (

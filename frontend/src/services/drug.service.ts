@@ -1,21 +1,41 @@
 import { apiClient } from "../lib/api-client";
 
-// Định nghĩa kiểu dữ liệu cho thuốc để tránh lỗi 'any'
 export interface Drug {
-  id: number;
+  id: string;           // UUID
   name: string;
   code: string;
-  stockQuantity: number;
-  unit: string;
+  genericName?: string;
+  drugGroup?: string;
+  strength?: string;
+  unit?: string;
+  status?: string;
+  stockQuantity?: number;
 }
 
 export interface FetchDrugsParams {
   page: number;
   size: number;
-  search?: string; // Thêm search là tùy chọn
+  search?: string;
+  drugGroup?: string;
+  ingredient?: string;
+  status?: string;
+  advanced?: boolean;
 }
 
 export const fetchDrugs = async (params: FetchDrugsParams) => {
-  const response = await apiClient.get("/drugs", { params });
-  return response.data; // Giả sử response có dạng { data: Drug[], totalPages: number, totalElements: number }
+  const { search, advanced, ...rest } = params;
+  const endpoint = advanced ? "/drugs/search/advanced" : "/drugs";
+  const response = await apiClient.get(endpoint, {
+    params: {
+      ...rest,
+      keyword: search || undefined,
+    },
+  });
+  // BE trả về PageResponse: { success, content, totalElements, totalPages, page, size, ... }
+  const body = response.data;
+  return {
+    data: body.content ?? body.data ?? [],
+    totalElements: body.totalElements ?? 0,
+    totalPages: body.totalPages ?? 0,
+  };
 };

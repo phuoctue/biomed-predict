@@ -7,5 +7,10 @@ public record ClinicalSummaryResponse(
         String name,
         List<String> conditions,
         int egfr,
-        String bloodPressure
+        String bloodPressure,
+        String sex,
+        Integer age,
+        Integer heightCm,
+        Integer weightKg,
+        String latestTest
 ) {}

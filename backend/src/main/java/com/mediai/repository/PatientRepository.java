@@ -1,5 +1,6 @@
 package com.mediai.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
 
     boolean existsByCitizenIdIgnoreCase(String citizenId);
 
-    java.util.Optional<Patient> findByMrnIgnoreCase(String mrn);
+    Optional<Patient> findByMrnIgnoreCase(String mrn);
 
-    java.util.Optional<Patient> findByCitizenIdIgnoreCase(String citizenId);
+    Optional<Patient> findByCitizenIdIgnoreCase(String citizenId);
 }

@@ -10,27 +10,36 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mediai.dto.common.PageResponse;
+import com.mediai.dto.patient.ClinicalSummaryResponse;
 import com.mediai.dto.patient.CreatePatientRequest;
 import com.mediai.dto.patient.PatientEvaluationSummaryResponse;
 import com.mediai.dto.patient.PatientResponse;
 import com.mediai.dto.patient.PatientSummaryResponse;
 import com.mediai.dto.patient.UpdatePatientRequest;
-import com.mediai.entity.AIEvaluation;
 import com.mediai.entity.Patient;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.AIEvaluationRepository;
 import com.mediai.repository.PatientRepository;
+import com.mediai.repository.LabResultRepository;
+import com.mediai.entity.LabResult;
 import com.mediai.specification.PatientSpecifications;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.time.Period;
+import java.time.LocalDate;
 
 @Service
 public class PatientService {
 
     private final PatientRepository patientRepository;
     private final AIEvaluationRepository aiEvaluationRepository;
+    private final LabResultRepository labResultRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public PatientService(PatientRepository patientRepository, AIEvaluationRepository aiEvaluationRepository) {
+    public PatientService(PatientRepository patientRepository, AIEvaluationRepository aiEvaluationRepository, LabResultRepository labResultRepository, JdbcTemplate jdbcTemplate) {
         this.patientRepository = patientRepository;
         this.aiEvaluationRepository = aiEvaluationRepository;
+        this.labResultRepository = labResultRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -59,10 +68,10 @@ public class PatientService {
 
         var patient = new Patient();
         applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
-                request.citizenId(),
-                request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
-                request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
-                request.emergencyContactRelation(), request.diagnosis(), request.allergies());
+                request.citizenId(), request.phone(), request.address(), request.heightCm(), request.weightKg(),
+                request.bloodType(), request.insuranceNumber(), request.emergencyContactName(),
+                request.emergencyContactPhone(), request.emergencyContactRelation(),
+                request.diagnosis(), request.allergies());
 
         return PatientResponse.from(patientRepository.save(patient));
     }
@@ -73,10 +82,10 @@ public class PatientService {
         validateUniqueIdentifiers(request.mrn(), request.citizenId(), id);
 
         applyRequest(patient, request.mrn(), request.fullName(), request.dateOfBirth(), request.sex(),
-                request.citizenId(),
-                request.phone(), request.address(), request.heightCm(), request.weightKg(), request.bloodType(),
-                request.insuranceNumber(), request.emergencyContactName(), request.emergencyContactPhone(),
-                request.emergencyContactRelation(), request.diagnosis(), request.allergies());
+                request.citizenId(), request.phone(), request.address(), request.heightCm(), request.weightKg(),
+                request.bloodType(), request.insuranceNumber(), request.emergencyContactName(),
+                request.emergencyContactPhone(), request.emergencyContactRelation(),
+                request.diagnosis(), request.allergies());
 
         return PatientResponse.from(patientRepository.save(patient));
     }
@@ -84,6 +93,24 @@ public class PatientService {
     @Transactional
     public void deletePatient(UUID id) {
         var patient = findPatient(id);
+        
+        // Delete deep dependencies to avoid foreign key constraints
+        jdbcTemplate.update("DELETE FROM lab_results WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM prescription_items WHERE prescription_id IN (SELECT id FROM prescriptions WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?))", id);
+        jdbcTemplate.update("DELETE FROM prescriptions WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM vital_signs WHERE medical_record_id IN (SELECT id FROM medical_records WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM medical_records WHERE patient_id = ?", id);
+        
+        jdbcTemplate.update("DELETE FROM ai_evaluation_items WHERE evaluation_id IN (SELECT id FROM ai_evaluations WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM ai_warnings WHERE evaluation_id IN (SELECT id FROM ai_evaluations WHERE patient_id = ?)", id);
+        jdbcTemplate.update("DELETE FROM ai_evaluations WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM evaluations WHERE patient_id = ?", id);
+        
+        jdbcTemplate.update("DELETE FROM patient_drugs WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM patient_allergies WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM patient_diseases WHERE patient_id = ?", id);
+        jdbcTemplate.update("DELETE FROM emergency_contacts WHERE patient_id = ?", id);
+        
         patientRepository.delete(patient);
     }
 
@@ -105,10 +132,10 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public com.mediai.dto.patient.ClinicalSummaryResponse getClinicalSummary(String mrn) {
+    public ClinicalSummaryResponse getClinicalSummary(String mrn) {
         var patient = patientRepository.findByMrnIgnoreCase(mrn)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found with MRN: " + mrn));
-        
+
         List<String> conditions = List.of();
         if (patient.getDiagnosis() != null && !patient.getDiagnosis().isBlank()) {
             conditions = List.of(patient.getDiagnosis().split("[,;\\n]+")).stream()
@@ -128,8 +155,8 @@ public class PatientService {
                 if (matcher.find()) {
                     egfr = Integer.parseInt(matcher.group(1));
                 }
-            } catch (Exception e) {
-                // ignore
+            } catch (Exception ignored) {
+                // keep default
             }
         }
         if (diagLower.contains("/") || diagLower.contains("huyết áp") || diagLower.contains("blood pressure")) {
@@ -139,17 +166,26 @@ public class PatientService {
                 if (matcher.find()) {
                     bp = matcher.group(1);
                 }
-            } catch (Exception e) {
-                // ignore
+            } catch (Exception ignored) {
+                // keep default
             }
         }
 
-        return new com.mediai.dto.patient.ClinicalSummaryResponse(
+        Integer age = patient.getDateOfBirth() != null ? Period.between(patient.getDateOfBirth(), LocalDate.now()).getYears() : null;
+        LabResult lab = labResultRepository.findTopByMedicalRecord_Patient_IdOrderByCreatedAtDesc(patient.getId());
+        String latestTest = (lab != null) ? (lab.getTestName() + ": " + lab.getResultValue() + (lab.getUnit() != null && !lab.getUnit().isBlank() ? " " + lab.getUnit() : "")) : "Chưa có xét nghiệm gần đây";
+
+        return new ClinicalSummaryResponse(
                 patient.getMrn(),
                 patient.getFullName(),
                 conditions,
                 egfr,
-                bp
+                bp,
+                patient.getSex(),
+                age,
+                patient.getHeightCm(),
+                patient.getWeightKg(),
+                latestTest
         );
     }
 
@@ -173,23 +209,11 @@ public class PatientService {
         }
     }
 
-    private void applyRequest(Patient patient,
-            String mrn,
-            String fullName,
-            java.time.LocalDate dateOfBirth,
-            String sex,
-            String citizenId,
-            String phone,
-            String address,
-            Integer heightCm,
-            Integer weightKg,
-            String bloodType,
-            String insuranceNumber,
-            String emergencyContactName,
-            String emergencyContactPhone,
-            String emergencyContactRelation,
-            String diagnosis,
-            String allergies) {
+    private void applyRequest(Patient patient, String mrn, String fullName,
+            java.time.LocalDate dateOfBirth, String sex, String citizenId, String phone, String address,
+            Integer heightCm, Integer weightKg, String bloodType, String insuranceNumber,
+            String emergencyContactName, String emergencyContactPhone, String emergencyContactRelation,
+            String diagnosis, String allergies) {
         patient.setMrn(mrn);
         patient.setFullName(fullName);
         patient.setDateOfBirth(dateOfBirth);

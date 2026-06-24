@@ -1,7 +1,8 @@
 // src/types/user.ts
 export interface User {
-  id: number;
+  id: string;
   fullName: string;
   email: string;
-  roleName: string;
+  role: string;
+  department?: string;
 }

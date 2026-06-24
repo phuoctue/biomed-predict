@@ -127,6 +127,10 @@ create table if not exists activity_logs (
   details text,
   ip_address varchar(50),
   user_agent text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists notifications (
   id uuid primary key,
   recipient_id uuid not null references users(id) on delete cascade,

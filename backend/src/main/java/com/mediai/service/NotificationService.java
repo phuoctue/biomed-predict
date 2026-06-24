@@ -14,7 +14,6 @@ import com.mediai.dto.notification.NotificationResponse;
 import com.mediai.entity.Notification;
 import com.mediai.entity.Notification.NotificationStatus;
 import com.mediai.entity.Notification.NotificationType;
-import com.mediai.entity.User;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.NotificationRepository;
 import com.mediai.repository.UserRepository;
@@ -41,23 +40,23 @@ public class NotificationService {
         notification.setMessage(request.message());
         notification.setType(NotificationType.valueOf(request.type().toUpperCase()));
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setSentAt(LocalDateTime.now());
+        // sentAt is handled by BaseEntity's createdAt
         notification.setRelatedEntityType(request.relatedEntityType());
         notification.setRelatedEntityId(request.relatedEntityId());
-        notification.setActionUrl(request.actionUrl());
+        // notification.setActionUrl(request.actionUrl()); // TODO: Re-enable when action_url column exists
 
         return toResponse(notificationRepository.save(notification));
     }
 
     @Transactional(readOnly = true)
     public Page<NotificationResponse> getNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipientId(userId, pageable)
+        return notificationRepository.findByRecipient_Id(userId, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
     public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipientIdAndStatus(userId, NotificationStatus.UNREAD, pageable)
+        return notificationRepository.findByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD, pageable)
                 .map(this::toResponse);
     }
 
@@ -65,7 +64,7 @@ public class NotificationService {
     public NotificationResponse markAsRead(UUID notificationId) {
         var notification = findNotification(notificationId);
         notification.setStatus(NotificationStatus.READ);
-        notification.setReadAt(LocalDateTime.now());
+        // notification.setReadAt(LocalDateTime.now()); // TODO: Re-enable when read_at column exists
         return toResponse(notificationRepository.save(notification));
     }
 
@@ -83,7 +82,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public Long getUnreadCount(UUID userId) {
-        return notificationRepository.countByRecipientIdAndStatus(userId, NotificationStatus.UNREAD);
+        return notificationRepository.countByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD);
     }
 
     private Notification findNotification(UUID id) {
@@ -100,11 +99,11 @@ public class NotificationService {
                 notification.getMessage(),
                 notification.getType().toString(),
                 notification.getStatus().toString(),
-                notification.getReadAt(),
-                notification.getSentAt(),
+                null, // notification.getReadAt(), // TODO: Re-enable when read_at column exists
+                createdAtLdt, // Use createdAt as sentAt
                 notification.getRelatedEntityType(),
                 notification.getRelatedEntityId(),
-                notification.getActionUrl(),
+                null, // notification.getActionUrl(), // TODO: Re-enable when action_url column exists
                 createdAtLdt);
     }
 }

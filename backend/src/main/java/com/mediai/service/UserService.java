@@ -27,7 +27,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -66,7 +67,7 @@ public class UserService {
         user.setEmail(request.email().trim().toLowerCase());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setFullName(request.fullName());
-        user.setRole(request.role());
+        user.setRole(resolveRoleString(request.role()));
         user.setDepartment(request.department());
 
         return UserResponse.from(userRepository.save(user));
@@ -77,7 +78,7 @@ public class UserService {
         var user = findUser(id);
 
         user.setFullName(request.fullName());
-        user.setRole(request.role());
+        user.setRole(resolveRoleString(request.role()));
         user.setDepartment(request.department());
 
         return UserResponse.from(userRepository.save(user));
@@ -114,5 +115,9 @@ public class UserService {
     private User findUser(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    }
+
+    private String resolveRoleString(UserRole role) {
+        return role == null ? UserRole.MEDICAL_STAFF.name() : role.name();
     }
 }

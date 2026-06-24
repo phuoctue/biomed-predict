@@ -23,8 +23,10 @@ public class AllergyService {
     private final DrugRepository drugRepository;
     private final IngredientRepository ingredientRepository;
 
-    public AllergyService(PatientAllergyRepository allergyRepository, PatientRepository patientRepository,
-            DrugRepository drugRepository, IngredientRepository ingredientRepository) {
+    public AllergyService(PatientAllergyRepository allergyRepository,
+            PatientRepository patientRepository,
+            DrugRepository drugRepository,
+            IngredientRepository ingredientRepository) {
         this.allergyRepository = allergyRepository;
         this.patientRepository = patientRepository;
         this.drugRepository = drugRepository;
@@ -34,7 +36,8 @@ public class AllergyService {
     @Transactional(readOnly = true)
     public List<AllergyResponse> listAllergies(UUID patientId) {
         if (patientId != null) {
-            return allergyRepository.findByPatient_Id(patientId).stream().map(AllergyResponse::from).toList();
+            return allergyRepository.findByPatient_Id(patientId).stream()
+                    .map(AllergyResponse::from).toList();
         }
         return allergyRepository.findAll().stream().map(AllergyResponse::from).toList();
     }

@@ -223,19 +223,30 @@ $backendLogErr = Join-Path $logsRoot "backend.err.log"
 $aiLogOut = Join-Path $logsRoot "ai-service.out.log"
 $aiLogErr = Join-Path $logsRoot "ai-service.err.log"
 
+Write-Host "Stopping old Java/Python processes if any..." -ForegroundColor DarkYellow
+Get-Process java,python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+
 Write-Host "Starting AI service..." -ForegroundColor Cyan
 Start-Process -FilePath $aiVenvPython -ArgumentList @("-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload") -WorkingDirectory $aiRoot -WindowStyle Hidden -RedirectStandardOutput $aiLogOut -RedirectStandardError $aiLogErr
 
-Write-Host "Starting backend..." -ForegroundColor Cyan
-Start-Process -FilePath "powershell.exe" -ArgumentList @(
-    "-NoProfile",
-    "-ExecutionPolicy", "Bypass",
-    "-Command",
-    "Set-Location -LiteralPath '$backendRoot'; mvn spring-boot:run"
-) -WorkingDirectory $backendRoot -WindowStyle Hidden -RedirectStandardOutput $backendLogOut -RedirectStandardError $backendLogErr
+Write-Host "Starting backend in this terminal..." -ForegroundColor Cyan
+Write-Host "Press Ctrl+C to stop backend and AI service." -ForegroundColor DarkGray
 
-Write-Host "Done. Backend and AI service are starting in the background." -ForegroundColor Green
-Write-Host "Backend logs: $backendLogOut"
-Write-Host "Backend errors: $backendLogErr"
-Write-Host "AI logs: $aiLogOut"
-Write-Host "AI errors: $aiLogErr"
+$backendEnv = @{
+    DATABASE_URL = $values["DATABASE_URL"]
+    POSTGRES_USER = $values["POSTGRES_USER"]
+    POSTGRES_PASSWORD = $values["POSTGRES_PASSWORD"]
+    BACKEND_PORT = $values["BACKEND_PORT"]
+}
+
+foreach ($entry in $backendEnv.GetEnumerator()) {
+    [System.Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, "Process")
+}
+
+Push-Location $backendRoot
+try {
+    & .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local -DskipTests
+}
+finally {
+    Pop-Location
+}

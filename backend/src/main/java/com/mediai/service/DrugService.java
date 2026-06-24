@@ -32,11 +32,12 @@ public class DrugService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<DrugSummaryResponse> listDrugs(String keyword, String drugGroup, String ingredient,
+    public PageResponse<DrugSummaryResponse> listDrugs(String keyword, String drugGroup, String ingredient, String status,
             Pageable pageable) {
         Specification<Drug> specification = DrugSpecifications.keywordContains(keyword)
                 .and(DrugSpecifications.drugGroupEquals(drugGroup))
-                .and(DrugSpecifications.ingredientContains(ingredient));
+                .and(DrugSpecifications.ingredientContains(ingredient))
+                .and(DrugSpecifications.statusEquals(status));
 
         Page<DrugSummaryResponse> page = drugRepository.findAll(specification, pageable).map(DrugSummaryResponse::from);
         return PageResponse.ok(
@@ -81,7 +82,8 @@ public class DrugService {
     @Transactional(readOnly = true)
     public List<DrugInteractionResponse> getInteractions(UUID drugId) {
         findDrug(drugId);
-        return drugInteractionRepository.findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
+        return drugInteractionRepository
+                .findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
                 .map(DrugInteractionResponse::from)
                 .toList();
     }

@@ -52,14 +52,16 @@ public class IngredientController {
     public ResponseEntity<ApiResponse<IngredientResponse>> createIngredient(
             @Valid @RequestBody IngredientRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Ingredient created successfully.", ingredientService.createIngredient(request)));
+                .body(ApiResponse.ok("Ingredient created successfully.",
+                        ingredientService.createIngredient(request)));
     }
 
     @PutMapping("/{id}")
     public ApiResponse<IngredientResponse> updateIngredient(
             @PathVariable UUID id,
             @Valid @RequestBody IngredientRequest request) {
-        return ApiResponse.ok("Ingredient updated successfully.", ingredientService.updateIngredient(id, request));
+        return ApiResponse.ok("Ingredient updated successfully.",
+                ingredientService.updateIngredient(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -70,6 +72,7 @@ public class IngredientController {
 
     @GetMapping("/{id}/drugs")
     public ApiResponse<List<DrugSummaryResponse>> getDrugsByIngredient(@PathVariable UUID id) {
-        return ApiResponse.ok("Drugs retrieved successfully.", ingredientService.getDrugsByIngredient(id));
+        return ApiResponse.ok("Drugs retrieved successfully.",
+                ingredientService.getDrugsByIngredient(id));
     }
 }

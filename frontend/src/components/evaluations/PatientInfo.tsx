@@ -37,17 +37,23 @@ export const PatientInfo = ({ patients, selectedPatient, onSelect }: PatientInfo
 
       {/* Danh sách sổ xuống */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
-          {patients.map((p) => (
-            <div 
-              key={p.id}
-              onClick={() => { onSelect(p); setIsOpen(false); }}
-              className="p-4 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0"
-            >
-              <p className="font-bold text-slate-800 text-sm">{p.name}</p>
-              <p className="text-[10px] text-slate-400">ID: {p.id}</p>
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden max-h-64 overflow-y-auto">
+          {patients.length === 0 ? (
+            <div className="p-4 text-center text-slate-400 text-sm">
+              Không có bệnh nhân nào
             </div>
-          ))}
+          ) : (
+            patients.map((p) => (
+              <div 
+                key={p.id}
+                onClick={() => { onSelect(p); setIsOpen(false); }}
+                className="p-4 hover:bg-blue-50 cursor-pointer border-b border-slate-50 last:border-0"
+              >
+                <p className="font-bold text-slate-800 text-sm">{p.name}</p>
+                <p className="text-[10px] text-slate-400">ID: {p.id}</p>
+              </div>
+            ))
+          )}
         </div>
       )}
 

@@ -7,11 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AIEvaluationRequest(
-        @NotNull
-        UUID patientId,
-        @NotNull
-        UUID drugId,
-        @Size(max = 255)
-        String dosage,
+        @NotNull UUID patientId,
+        @NotNull UUID drugId,
+        @Size(max = 255) String dosage,
         Map<String, String> labs) {
 }
