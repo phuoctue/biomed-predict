@@ -24,8 +24,11 @@ import com.mediai.dto.drug.DrugInteractionResponse;
 import com.mediai.dto.drug.DrugRequest;
 import com.mediai.dto.drug.DrugResponse;
 import com.mediai.dto.drug.DrugSummaryResponse;
+import com.mediai.dto.drug.ExternalDrugSearchRequest;
+import com.mediai.dto.drug.ExternalDrugSearchResponse;
 import com.mediai.service.DrugInteractionService;
 import com.mediai.service.DrugService;
+import com.mediai.service.ExternalDrugService;
 
 import jakarta.validation.Valid;
 
@@ -35,10 +38,13 @@ public class DrugController {
 
     private final DrugService drugService;
     private final DrugInteractionService drugInteractionService;
+    private final ExternalDrugService externalDrugService;
 
-    public DrugController(DrugService drugService, DrugInteractionService drugInteractionService) {
+    public DrugController(DrugService drugService, DrugInteractionService drugInteractionService,
+            ExternalDrugService externalDrugService) {
         this.drugService = drugService;
         this.drugInteractionService = drugInteractionService;
+        this.externalDrugService = externalDrugService;
     }
 
     @GetMapping
@@ -46,23 +52,25 @@ public class DrugController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String drugGroup,
             @RequestParam(required = false) String ingredient,
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(keyword, drugGroup, ingredient, pageable);
+        return drugService.listDrugs(keyword, drugGroup, ingredient, status, pageable);
     }
 
     @GetMapping("/search")
     public PageResponse<DrugSummaryResponse> searchDrugs(
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(keyword, null, null, pageable);
+        return drugService.listDrugs(keyword, null, null, null, pageable);
     }
 
     @GetMapping("/search/advanced")
     public PageResponse<DrugSummaryResponse> searchDrugsAdvanced(
             @RequestParam(required = false) String ingredient,
             @RequestParam(required = false) String drugGroup,
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 20) Pageable pageable) {
-        return drugService.listDrugs(null, drugGroup, ingredient, pageable);
+        return drugService.listDrugs(null, drugGroup, ingredient, status, pageable);
     }
 
     @GetMapping("/{id}")
@@ -77,7 +85,9 @@ public class DrugController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<DrugResponse> updateDrug(@PathVariable UUID id, @Valid @RequestBody DrugRequest request) {
+    public ApiResponse<DrugResponse> updateDrug(
+            @PathVariable UUID id,
+            @Valid @RequestBody DrugRequest request) {
         return ApiResponse.ok("Drug updated successfully.", drugService.updateDrug(id, request));
     }
 
@@ -96,18 +106,19 @@ public class DrugController {
     public ResponseEntity<ApiResponse<DrugInteractionResponse>> createInteraction(
             @PathVariable UUID id,
             @Valid @RequestBody DrugInteractionRequest request) {
-        var payload = new DrugInteractionRequest(id, request.targetDrugId(), request.severity(), request.description(),
-                request.recommendation());
+        var payload = new DrugInteractionRequest(
+                id, request.targetDrugId(), request.severity(),
+                request.description(), request.recommendation());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Drug interaction created successfully.", drugInteractionService.createInteraction(payload)));
+                .body(ApiResponse.ok("Drug interaction created successfully.",
+                        drugInteractionService.createInteraction(payload)));
     }
 
     @PutMapping("/interactions/{interactionId}")
     public ApiResponse<DrugInteractionResponse> updateInteraction(
             @PathVariable UUID interactionId,
             @Valid @RequestBody DrugInteractionRequest request) {
-        return ApiResponse.ok(
-                "Drug interaction updated successfully.",
+        return ApiResponse.ok("Drug interaction updated successfully.",
                 drugInteractionService.updateInteraction(interactionId, request));
     }
 
@@ -115,5 +126,27 @@ public class DrugController {
     public ApiResponse<String> deleteInteraction(@PathVariable UUID interactionId) {
         drugInteractionService.deleteInteraction(interactionId);
         return ApiResponse.ok("Drug interaction deleted successfully.", "deleted");
+    }
+
+    @PostMapping("/search/external")
+    public ApiResponse<List<ExternalDrugSearchResponse>> searchExternalDrugs(
+            @Valid @RequestBody ExternalDrugSearchRequest request) {
+        return ApiResponse.ok("External drugs searched successfully.",
+                externalDrugService.searchDrugs(request));
+    }
+
+    @GetMapping("/{id}/alternatives")
+    public PageResponse<DrugSummaryResponse> getAlternativeDrugs(
+            @PathVariable UUID id,
+            @PageableDefault(size = 20) Pageable pageable) {
+        var drug = drugService.getDrug(id);
+        return drugService.listDrugs(drug.drugGroup(), drug.drugGroup(), null, null, pageable);
+    }
+
+    @GetMapping("/search/by-symptoms")
+    public PageResponse<DrugSummaryResponse> searchBySymptoms(
+            @RequestParam(required = false) String symptom,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return drugService.listDrugs(symptom, null, null, null, pageable);
     }
 }

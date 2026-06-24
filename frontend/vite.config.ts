@@ -1,13 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path from "path"; // Cần import path
+import path from "path";
 
 export default defineConfig({
   envDir: "../",
   plugins: [react()],
   resolve: {
     alias: {
-      // Cấu hình để Vite hiểu @/ trỏ tới thư mục src
       "@": path.resolve(__dirname, "./src"),
     },
   },

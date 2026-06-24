@@ -2,6 +2,7 @@ package com.mediai.config;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import com.mediai.entity.UserRole;
 import com.mediai.repository.UserRepository;
 
 @Component
+@Profile({ "dev", "local", "default" })
 public class DataSeeder implements ApplicationRunner {
 
     private final UserRepository userRepository;
@@ -24,31 +26,18 @@ public class DataSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        seedUser(
-                "doctor@mediai.local",
-                "password123",
-                "Dr. Nguyen Minh",
-                UserRole.DOCTOR,
-                "Internal Medicine");
-
-        seedUser(
-                "admin@mediai.local",
-                "admin12345",
-                "System Admin",
-                UserRole.ADMIN,
-                "Administration");
+        seedUser("doctor@mediai.local", "password123", "Dr. Nguyen Minh", UserRole.DOCTOR, "Internal Medicine");
+        seedUser("admin@mediai.local",  "admin12345",  "System Admin",    UserRole.ADMIN,  "Administration");
     }
 
     private void seedUser(String email, String rawPassword, String fullName, UserRole role, String department) {
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            return;
-        }
+        if (userRepository.existsByEmailIgnoreCase(email)) return;
 
         var user = new User();
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setFullName(fullName);
-        user.setRole(role);
+        user.setRole(role.name());
         user.setDepartment(department);
         userRepository.save(user);
     }

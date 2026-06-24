@@ -12,6 +12,7 @@ import com.mediai.auth.dto.ChangePasswordRequest;
 import com.mediai.auth.dto.LoginRequest;
 import com.mediai.auth.dto.LoginResponse;
 import com.mediai.auth.dto.MessageResponse;
+import com.mediai.auth.dto.RefreshTokenRequest;
 import com.mediai.entity.User;
 import com.mediai.repository.UserRepository;
 import com.mediai.security.JwtService;
@@ -42,6 +43,31 @@ public class AuthService {
 
         var user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password."));
+        var principal = UserPrincipal.from(user);
+        var tokenPair = jwtService.generateTokenPair(principal);
+
+        return new LoginResponse(
+                tokenPair.accessToken(),
+                tokenPair.refreshToken(),
+                tokenPair.expiredAt(),
+                AuthUserResponse.from(user));
+    }
+
+    @Transactional(readOnly = true)
+    public LoginResponse refresh(RefreshTokenRequest request) {
+        // Verify refresh token signature / expiry and extract username.
+        var username = jwtService.extractUsernameFromRefresh(request.refreshToken());
+        if (username == null || username.isBlank()) {
+            throw new BadCredentialsException("Invalid refresh token.");
+        }
+
+        var user = userRepository.findByEmailIgnoreCase(username)
+                .orElseThrow(() -> new BadCredentialsException("User session is no longer valid."));
+
+        if (!jwtService.isRefreshTokenValid(request.refreshToken(), user.getEmail())) {
+            throw new BadCredentialsException("Refresh token expired or invalid.");
+        }
+
         var principal = UserPrincipal.from(user);
         var tokenPair = jwtService.generateTokenPair(principal);
 

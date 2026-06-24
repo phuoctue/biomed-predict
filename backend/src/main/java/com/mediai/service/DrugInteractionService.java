@@ -19,7 +19,8 @@ public class DrugInteractionService {
     private final DrugInteractionRepository drugInteractionRepository;
     private final DrugRepository drugRepository;
 
-    public DrugInteractionService(DrugInteractionRepository drugInteractionRepository, DrugRepository drugRepository) {
+    public DrugInteractionService(DrugInteractionRepository drugInteractionRepository,
+            DrugRepository drugRepository) {
         this.drugInteractionRepository = drugInteractionRepository;
         this.drugRepository = drugRepository;
     }
@@ -27,9 +28,11 @@ public class DrugInteractionService {
     @Transactional(readOnly = true)
     public List<DrugInteractionResponse> listAll(UUID drugId) {
         if (drugId == null) {
-            return drugInteractionRepository.findAll().stream().map(DrugInteractionResponse::from).toList();
+            return drugInteractionRepository.findAll().stream()
+                    .map(DrugInteractionResponse::from).toList();
         }
-        return drugInteractionRepository.findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
+        return drugInteractionRepository
+                .findBySourceDrug_IdOrTargetDrug_IdOrderByCreatedAtDesc(drugId, drugId).stream()
                 .map(DrugInteractionResponse::from)
                 .toList();
     }
@@ -67,7 +70,6 @@ public class DrugInteractionService {
         if (request.sourceDrugId().equals(request.targetDrugId())) {
             throw new IllegalArgumentException("Source drug and target drug must be different.");
         }
-
         interaction.setSourceDrug(drugRepository.findById(request.sourceDrugId())
                 .orElseThrow(() -> new ResourceNotFoundException("Source drug not found.")));
         interaction.setTargetDrug(drugRepository.findById(request.targetDrugId())

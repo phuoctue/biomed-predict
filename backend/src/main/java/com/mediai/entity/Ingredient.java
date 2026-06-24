@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 @Table(name = "ingredients")
 public class Ingredient extends BaseEntity {
 
+    // DB schema has column `code` (not `ingredient_code`)
     @Column(nullable = false, unique = true, length = 64)
     private String code;
 

@@ -33,16 +33,11 @@ public class IngredientService {
     @Transactional(readOnly = true)
     public PageResponse<IngredientResponse> listIngredients(String keyword, Pageable pageable) {
         Specification<Ingredient> specification = IngredientSpecifications.keywordContains(keyword);
-        Page<IngredientResponse> page = ingredientRepository.findAll(specification, pageable).map(IngredientResponse::from);
-        return PageResponse.ok(
-                "Ingredients retrieved successfully.",
-                page.getContent(),
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
-                page.isFirst(),
-                page.isLast());
+        Page<IngredientResponse> page = ingredientRepository.findAll(specification, pageable)
+                .map(IngredientResponse::from);
+        return PageResponse.ok("Ingredients retrieved successfully.", page.getContent(),
+                page.getNumber(), page.getSize(), page.getTotalElements(),
+                page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +48,6 @@ public class IngredientService {
     @Transactional
     public IngredientResponse createIngredient(IngredientRequest request) {
         validateUniqueCode(request.code(), null);
-
         var ingredient = new Ingredient();
         ingredient.setCode(request.code());
         ingredient.setName(request.name());

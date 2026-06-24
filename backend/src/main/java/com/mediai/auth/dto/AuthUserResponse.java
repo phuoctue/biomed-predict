@@ -13,11 +13,14 @@ public record AuthUserResponse(
         String department) {
 
     public static AuthUserResponse from(User user) {
+        var role = user.getRole() == null
+                ? UserRole.MEDICAL_STAFF
+                : UserRole.fromDbName(user.getRole());
         return new AuthUserResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getFullName(),
-                user.getRole(),
+                role,
                 user.getDepartment());
     }
 }
