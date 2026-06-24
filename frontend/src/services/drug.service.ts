@@ -39,3 +39,23 @@ export const fetchDrugs = async (params: FetchDrugsParams) => {
     totalPages: body.totalPages ?? 0,
   };
 };
+
+export interface DrugBookmark extends Drug {
+  bookmarkedAt?: string;
+}
+
+export const fetchBookmarkedDrugs = async (params: { page: number; size: number; keyword?: string }) => {
+  const response = await apiClient.get("/bookmarks", { params });
+  return response.data;
+};
+
+export const bookmarkDrug = async (drugId: string | number) => {
+  const response = await apiClient.post(`/bookmarks/drugs/${drugId}`);
+  return response.data;
+};
+
+export const removeDrugBookmark = async (drugId: string | number) => {
+  const response = await apiClient.delete(`/bookmarks/drugs/${drugId}`);
+  return response.data;
+};
+

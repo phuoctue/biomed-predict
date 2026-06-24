@@ -28,16 +28,16 @@ export interface UsageLogItem {
 }
 
 export const fetchDashboardStatistics = async (params: UsageStatisticsParams) => {
-  const response = await apiClient.get("/dashboard/statistics", { params });
+  const response = await apiClient.get("/stats/dashboard", { params });
   return response.data;
 };
 
 export const fetchDashboardCharts = async (params: UsageStatisticsParams) => {
-  const response = await apiClient.get("/dashboard/charts", { params });
+  const response = await apiClient.get("/stats/charts", { params });
   return response.data;
 };
 
 export const fetchUsageAuditLogs = async (params: UsageStatisticsParams & { page: number; size: number }) => {
-  const response = await apiClient.get("/audit-logs", { params });
+  const response = await apiClient.get("/activity-logs", { params });
   return response.data;
 };

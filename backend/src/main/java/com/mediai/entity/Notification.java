@@ -20,7 +20,7 @@ import java.util.UUID;
 public class Notification extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "recipient_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User recipient;
 
     @Column(nullable = false, length = 255)
@@ -30,21 +30,14 @@ public class Notification extends BaseEntity {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 50)
+    @Column(name = "notification_type", length = 50)
     private NotificationType type;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private NotificationStatus status = NotificationStatus.UNREAD;
+    @Column(name = "read_status", columnDefinition = "boolean default false")
+    private boolean readStatus = false;
 
-    // sentAt will use createdAt from BaseEntity
-    // No separate column mapping needed
-
-    @Column(name = "related_entity_type", length = 50)
-    private String relatedEntityType;
-
-    @Column(name = "related_entity_id")
-    private UUID relatedEntityId;
+    @Column(name = "read_time")
+    private LocalDateTime readTime;
 
     // TODO: These fields need to be added to database in future migration
     // @Column(name = "read_at")

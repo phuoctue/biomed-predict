@@ -20,6 +20,10 @@ export interface Patient {
   latestTestName?: string;
   latestTestValue?: string;
   latestTestDate?: string;
+  insuranceNumber?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
 }
 
 type PatientsResponse = {

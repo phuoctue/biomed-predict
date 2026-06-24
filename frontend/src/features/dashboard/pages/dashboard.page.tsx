@@ -68,20 +68,6 @@ export const DashboardPage = () => {
         <div className="lg:col-span-1">
           <RecentActivity activities={activities} />
         </div>
-      )}
-
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.key} metric={metric} loading={loading} />
-        ))}
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <BarChart
-          title="Phân bổ mức rủi ro lâm sàng"
-          items={riskDistribution}
-        />
-        <BarChart title="Trạng thái đơn thuốc" items={prescriptionStatus} />
       </div>
 
       <div className="mt-6">

@@ -14,6 +14,8 @@ const DrugsPage = lazy(() => import("../../features/drugs/pages/drugs.page").the
 const EvaluationPage = lazy(() => import("../../features/evaluations/pages/EvaluationPage").then((m) => ({ default: m.EvaluationPage })));
 const HistoryPage = lazy(() => import("../../features/history/HistoryPage").then((m) => ({ default: m.HistoryPage })));
 const SettingsPage = lazy(() => import("../../features/settings/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const BookmarkedDrugsPage = lazy(() => import("../../features/drugs/pages/bookmarked-drugs.page").then((m) => ({ default: m.BookmarkedDrugsPage })));
+const UsageStatisticsPage = lazy(() => import("../../features/statistics/pages/usage-statistics.page").then((m) => ({ default: m.UsageStatisticsPage })));
 
 const PageFallback = () => (
   <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -56,9 +58,11 @@ export const router = createBrowserRouter([
           },
           {
             path: routePaths.bookmarkedDrugs,
-            element: <BookmarkedDrugsPage />
+            element: withSuspense(<BookmarkedDrugsPage />),
+          },
+          {
             path: routePaths.usageStatistics,
-            element: <UsageStatisticsPage />
+            element: withSuspense(<UsageStatisticsPage />),
           },
           {
             path: routePaths.evaluations,

@@ -10,9 +10,8 @@ import {
   Pill,
   Settings,
   ShieldAlert,
-  Users
-import { 
-  BarChart3, LayoutDashboard, Users, Pill, ShieldAlert, LogOut, Activity, History, Settings 
+  Users,
+  BarChart3
 } from 'lucide-react';
 import { useAuthStore } from '../../features/auth/store/auth.store';
 

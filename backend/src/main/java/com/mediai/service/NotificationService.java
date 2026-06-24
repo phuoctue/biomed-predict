@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mediai.dto.notification.NotificationRequest;
 import com.mediai.dto.notification.NotificationResponse;
 import com.mediai.entity.Notification;
-import com.mediai.entity.Notification.NotificationStatus;
 import com.mediai.entity.Notification.NotificationType;
 import com.mediai.exception.ResourceNotFoundException;
 import com.mediai.repository.NotificationRepository;
@@ -39,11 +38,8 @@ public class NotificationService {
         notification.setTitle(request.title());
         notification.setMessage(request.message());
         notification.setType(NotificationType.valueOf(request.type().toUpperCase()));
-        notification.setStatus(NotificationStatus.UNREAD);
-        // sentAt is handled by BaseEntity's createdAt
-        notification.setRelatedEntityType(request.relatedEntityType());
-        notification.setRelatedEntityId(request.relatedEntityId());
-        // notification.setActionUrl(request.actionUrl()); // TODO: Re-enable when action_url column exists
+        notification.setReadStatus(false);
+        // relatedEntity fields were removed from entity
 
         return toResponse(notificationRepository.save(notification));
     }
@@ -56,23 +52,21 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public Page<NotificationResponse> getUnreadNotifications(UUID userId, Pageable pageable) {
-        return notificationRepository.findByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD, pageable)
+        return notificationRepository.findByRecipient_IdAndReadStatus(userId, false, pageable)
                 .map(this::toResponse);
     }
 
     @Transactional
     public NotificationResponse markAsRead(UUID notificationId) {
         var notification = findNotification(notificationId);
-        notification.setStatus(NotificationStatus.READ);
-        // notification.setReadAt(LocalDateTime.now()); // TODO: Re-enable when read_at column exists
+        notification.setReadStatus(true);
+        notification.setReadTime(LocalDateTime.now());
         return toResponse(notificationRepository.save(notification));
     }
 
     @Transactional
     public void markAsArchived(UUID notificationId) {
-        var notification = findNotification(notificationId);
-        notification.setStatus(NotificationStatus.ARCHIVED);
-        notificationRepository.save(notification);
+        markAsRead(notificationId);
     }
 
     @Transactional
@@ -82,7 +76,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public Long getUnreadCount(UUID userId) {
-        return notificationRepository.countByRecipient_IdAndStatus(userId, NotificationStatus.UNREAD);
+        return notificationRepository.countByRecipient_IdAndReadStatus(userId, false);
     }
 
     private Notification findNotification(UUID id) {
@@ -97,13 +91,13 @@ public class NotificationService {
                 notification.getRecipient().getId(),
                 notification.getTitle(),
                 notification.getMessage(),
-                notification.getType().toString(),
-                notification.getStatus().toString(),
-                null, // notification.getReadAt(), // TODO: Re-enable when read_at column exists
-                createdAtLdt, // Use createdAt as sentAt
-                notification.getRelatedEntityType(),
-                notification.getRelatedEntityId(),
-                null, // notification.getActionUrl(), // TODO: Re-enable when action_url column exists
+                notification.getType() != null ? notification.getType().toString() : "SYSTEM_ALERT",
+                notification.isReadStatus() ? "READ" : "UNREAD",
+                notification.getReadTime(),
+                createdAtLdt,
+                null,
+                null,
+                null,
                 createdAtLdt);
     }
 }

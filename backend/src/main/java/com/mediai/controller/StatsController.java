@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stats")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
 public class StatsController {
 
     private final StatsService statsService;
@@ -46,5 +46,10 @@ public class StatsController {
     public ApiResponse<List<Map<String, Object>>> getRecentEvaluations(
             @RequestParam(defaultValue = "10") int limit) {
         return ApiResponse.ok("Recent evaluations retrieved.", statsService.getRecentEvaluations(limit));
+    }
+
+    @GetMapping("/charts")
+    public ApiResponse<Map<String, Object>> getCharts() {
+        return ApiResponse.ok("Charts data retrieved.", statsService.getChartsStats());
     }
 }

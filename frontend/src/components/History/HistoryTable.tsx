@@ -46,13 +46,7 @@ export const HistoryTable = () => {
 
   const rows = query.data ?? [];
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
-
-  // Logic phân trang
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentData = allData.slice(indexOfFirstItem, indexOfLastItem);
+  // Bỏ logic phân trang vì không sử dụng và gây lỗi
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
