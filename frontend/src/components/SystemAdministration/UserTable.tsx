@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Pagination from "@/components/ui/Pagination";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { EditUserModal } from "@/components/SystemAdministration/EditUserModal";
 import type { EditableUser } from "@/components/SystemAdministration/EditUserModal";
@@ -25,6 +26,15 @@ export const UserTable = () => {
     await deleteUser.mutateAsync(id);
     setOpenMenuId(null);
   };
+
+  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2;
+
+  // Tính toán dữ liệu hiển thị cho phân trang
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">

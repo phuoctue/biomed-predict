@@ -55,6 +55,12 @@ export const router = createBrowserRouter([
             element: withSuspense(<DrugsPage />),
           },
           {
+            path: routePaths.bookmarkedDrugs,
+            element: <BookmarkedDrugsPage />
+            path: routePaths.usageStatistics,
+            element: <UsageStatisticsPage />
+          },
+          {
             path: routePaths.evaluations,
             element: withSuspense(<EvaluationPage />),
           },
